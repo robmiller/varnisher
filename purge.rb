@@ -5,10 +5,17 @@ require 'net/http'
 require 'parallel'
 
 PROCESSES = 4
+
 if ( ENV['VARNISH_PROXY_HOSTNAME'] )
-  PROXY = ENV['VARNISH_PROXY_HOSTNAME']
+  PROXY_HOSTNAME = ENV['VARNISH_PROXY_HOSTNAME']
 else
-  PROXY     = 'proxy1.cloud.bigfish.co.uk'
+  PROXY_HOSTNAME     = 'proxy1.cloud.bigfish.co.uk'
+end
+
+if ( ENV['VARNISH_PROXY_PORT'] )
+  PROXY_PORT = ENV['VARNISH_PROXY_PORT']
+else
+  PROXY_PORT = 80
 end
 
 class Purger
@@ -54,7 +61,7 @@ class Purger
       return
     end
     
-    s = TCPSocket.open(PROXY, 80)
+    s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)
     s.print("PURGE #{uri.path} HTTP/1.1\r\nHost: #{uri.host}\r\n\r\n")
 
     response = s.read
