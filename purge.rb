@@ -5,7 +5,11 @@ require 'net/http'
 require 'parallel'
 
 PROCESSES = 4
-PROXY     = 'proxy1.cloud.bigfish.co.uk'
+if ( ENV['VARNISH_PROXY_HOSTNAME'] )
+  PROXY = ENV['VARNISH_PROXY_HOSTNAME']
+else
+  PROXY     = 'proxy1.cloud.bigfish.co.uk'
+end
 
 class Purger
   
