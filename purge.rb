@@ -23,6 +23,11 @@ class Purger
     puts "Looking for external resources on #{@url}...\n\n"
     find_resources(@url)
     puts "\n#{@urls.length} total resources found.\n\n"
+
+    if @urls.length == 0
+      puts "No resources found. Abort!"
+      return
+    end
     
     # Let's figure out which of these resources we can actually purge — whether they're on our server, etc.
     puts "Tidying resources...\n"
