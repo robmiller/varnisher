@@ -115,6 +115,13 @@ class Purger
       if /^\//.match(url.to_s)
         url = @uri.scheme + "://" + @uri.host + url.to_s
       end
+
+      # If we're dealing with a path-relative URL, make it relative to the current directory.
+      if !/[a-z]+:\/\//.match(url.to_s)
+        # Take everything up to the final / in the path to be the current directory.
+        /^(.*)\/.*$/.match(@uri.path)
+        url = @uri.scheme + "://" + @uri.host + $1 + "/" + url.to_s
+      end
       
       begin
         uri = URI.parse(url)
