@@ -96,26 +96,21 @@ class Purger
       return
     end
 
-    # Stylesheets
-    doc.search("link[@rel*=stylesheet]").each { |e|
-      href = e.get_attribute('href')
-      puts "Found stylesheet: #{href}"
-      queue_resource(href)
-    }
+    # A bash at an abstract representation of resources. All you need is an XPath, and what attribute to select from the matched elements.
+    resource = Struct.new :name, :xpath, :attribute
+    resources = [ 
+      resource.new('stylesheet', 'link[@rel*=stylesheet]', 'href'),
+      resource.new('JavaScript file', 'script[@src]', 'src'),
+      resource.new('image file', 'img[@src]', 'src')
+    ]
 
-    # JavaScript files
-    doc.search("script[@src]").each { |e|
-      src = e.get_attribute('src')
-      puts "Found JavaScript file: #{src}"
-      queue_resource(src)
+    resources.each { |resource|
+      doc.search(resource.xpath).each { |e|
+        att = e.get_attribute(resource.attribute)
+        puts "Found #{resource.name}: #{att}"
+        queue_resource(att)
+      }
     }
-    
-    # Images
-    doc.search("img[@src]").each { |e|
-      src = e.get_attribute('src')
-      puts "Found image file: #{src}"
-      queue_resource(src)
-    }    
   end
   
   # Adds a URL to the processing queue.
