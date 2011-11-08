@@ -130,7 +130,7 @@ class Purger
       # If we're dealing with a path-relative URL, make it relative to the current directory.
       if !/[a-z]+:\/\//.match(url.to_s)
         # Take everything up to the final / in the path to be the current directory.
-        /^(.*)\/.*$/.match(@uri.path)
+        /^(.*)\//.match(@uri.path)
         url = @uri.scheme + "://" + @uri.host + $1 + "/" + url.to_s
       end
       
