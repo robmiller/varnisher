@@ -4,7 +4,6 @@ require 'hpricot'
 require 'net/http'
 require 'parallel'
 
-PROCESSES = 4
 PROXY_HOSTNAME = ENV['VARNISH_PROXY_HOSTNAME'] || 'localhost'
 PROXY_PORT = (ENV['VARNISH_PROXY_PORT'] || 80).to_i
 
@@ -112,7 +111,7 @@ class Purger
     
     @urls.each { |url|
       # If we're dealing with a host-relative URL (e.g. <img src="/foo/bar.jpg">), absolutify it.
-      if url.to_s =~ /^\//
+      if url.to_s =~ /^\//  
         url = @uri.scheme + "://" + @uri.host + url.to_s
       end
 
@@ -141,7 +140,7 @@ class Purger
   
   # Processes the queue of URLs, sending a purge request for each of them.
   def purge_queue()
-    Parallel.map(@urls, :in_processes => PROCESSES) { |url|
+    Parallel.map(@urls) { |url|
       puts "Purging #{url}..."
       purge(url)
       # sleep 3
