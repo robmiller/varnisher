@@ -6,7 +6,7 @@ require 'parallel'
 
 PROCESSES = 4
 PROXY_HOSTNAME = ENV['VARNISH_PROXY_HOSTNAME'] || 'localhost'
-PROXY_PORT = ENV['VARNISH_PROXY_PORT'].to_i || 80
+PROXY_PORT = (ENV['VARNISH_PROXY_PORT'] || 80).to_i
 
 class Purger
   
@@ -50,12 +50,11 @@ class Purger
       puts "Couldn't parse URL for purging: #{$!}"
       return
     end
-    
+
     s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)
     s.print("PURGE #{uri.path} HTTP/1.1\r\nHost: #{uri.host}\r\n\r\n")
 
-    response = s.read
-    if /HTTP\/1\.1 200 Purged\./.match(response)
+    if s.read =~ /HTTP\/1\.1 200 Purged\./
       puts "Purged  #{url}"
     else
       puts "Failed to purge #{url}"
@@ -113,12 +112,12 @@ class Purger
     
     @urls.each { |url|
       # If we're dealing with a host-relative URL (e.g. <img src="/foo/bar.jpg">), absolutify it.
-      if /^\//.match(url.to_s)
+      if url.to_s =~ /^\//
         url = @uri.scheme + "://" + @uri.host + url.to_s
       end
 
       # If we're dealing with a path-relative URL, make it relative to the current directory.
-      if !/[a-z]+:\/\//.match(url.to_s)
+      if !(url.to_s =~ /[a-z]+:\/\//)
         # Take everything up to the final / in the path to be the current directory.
         /^(.*)\//.match(@uri.path)
         url = @uri.scheme + "://" + @uri.host + $1 + "/" + url.to_s
