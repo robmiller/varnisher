@@ -18,12 +18,12 @@ optparse = OptionParser.new do |opts|
   end
 
   $options[:hostname] = 'localhost'
-  opts.on('-H', '--hostname HOSTNAME', 'Hostname/IP address of your Varnish server') do |hostname|
+  opts.on('-H', '--hostname HOSTNAME', 'Hostname/IP address of your Varnish server. Default is localhost') do |hostname|
     $options[:hostname] = hostname
   end
 
   $options[:port] = 80
-  opts.on('-p', '--port PORT', 'Port your Varnish server is listening on') do |port|
+  opts.on('-p', '--port PORT', 'Port your Varnish server is listening on. Default is 80') do |port|
     $options[:port] = port
   end
 

@@ -7,8 +7,8 @@ Administering Varnish is generally a breeze, but sometimes you want to do one of
 	Usage: varnish.rb [options] action target
     -h, --help                       Display this help
     -v, --verbose                    Output more information
-    -H, --hostname HOSTNAME          Hostname/IP address of your Varnish server
-    -p, --port PORT                  Port your Varnish server is listening on
+    -H, --hostname HOSTNAME          Hostname/IP address of your Varnish server. Default is localhost
+    -p, --port PORT                  Port your Varnish server is listening on. Default is 80
 
 ## Examples
 
