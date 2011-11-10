@@ -1,13 +1,9 @@
-#!/usr/bin/ruby
 require 'rubygems'
 require 'hpricot'
 require 'net/http'
 require 'parallel'
 
-PROXY_HOSTNAME = ENV['VARNISH_PROXY_HOSTNAME'] || 'localhost'
-PROXY_PORT = (ENV['VARNISH_PROXY_PORT'] || 80).to_i
-
-class Purger
+class PagePurger
   
   def initialize(url)
     @url = url
@@ -20,9 +16,19 @@ class Purger
     purge(@url)
     
     # Then, do a fresh GET of the page and queue any resources we find on it.
-    puts "Looking for external resources on #{@url}...\n\n"
+    puts "Looking for external resources on #{@url}..."
+
+    if $options[:verbose]
+      puts "\n\n"
+    end
+
     find_resources(@url)
-    puts "\n#{@urls.length} total resources found.\n\n"
+
+    if $options[:verbose]
+      puts "\n"
+    end
+
+    puts "#{@urls.length} total resources found.\n\n"
 
     if @urls.length == 0
       puts "No resources found. Abort!"
@@ -35,10 +41,19 @@ class Purger
     puts "#{@urls.length} purgeable resources found.\n\n"
     
     # Now, purge all of the resources we just queued.
-    puts "Purging resources...\n\n"
+    puts "Purging resources..."
+
+    if $options[:verbose]
+      puts "\n\n"
+    end
+
     purge_queue
+
+    if $options[:verbose]
+      puts "\n"
+    end
     
-    puts "\nNothing more to do!\n\n"
+    puts "Nothing more to do!\n\n"
   end
   
   # Sends a PURGE request to the Varnish server, asking it to purge the given URL from its cache.
@@ -53,10 +68,12 @@ class Purger
     s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)
     s.print("PURGE #{uri.path} HTTP/1.1\r\nHost: #{uri.host}\r\n\r\n")
 
-    if s.read =~ /HTTP\/1\.1 200 Purged\./
-      puts "Purged  #{url}"
-    else
-      puts "Failed to purge #{url}"
+    if $options[:verbose]
+      if s.read =~ /HTTP\/1\.1 200 Purged\./
+        puts "Purged  #{url}"
+      else
+        puts "Failed to purge #{url}"
+      end
     end
 
     s.close
@@ -95,7 +112,9 @@ class Purger
     resources.each { |resource|
       doc.search(resource.xpath).each { |e|
         att = e.get_attribute(resource.attribute)
-        puts "Found #{resource.name}: #{att}"
+        if $options[:verbose]
+          puts "Found #{resource.name}: #{att}"
+        end
         queue_resource(att)
       }
     }
@@ -125,30 +144,28 @@ class Purger
       begin
         uri = URI.parse(url)
       rescue
-        return
+        next 
       end
       
       # Skip URLs that aren't HTTP, or that are on different domains.
       next if uri.scheme != "http"
       next if uri.host != @uri.host
-      
+
       valid_urls << url
     }
-    
+
     @urls = valid_urls.dup
   end
   
   # Processes the queue of URLs, sending a purge request for each of them.
   def purge_queue()
     Parallel.map(@urls) { |url|
-      puts "Purging #{url}..."
+      if $options[:verbose]
+        puts "Purging #{url}..."
+      end
+
       purge(url)
-      # sleep 3
     }
   end
 
 end
-
-exit if ARGV.length == 0
-
-Purger.new(ARGV[0])
