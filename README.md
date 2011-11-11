@@ -9,6 +9,7 @@ Administering Varnish is generally a breeze, but sometimes you want to do one of
     -v, --verbose                    Output more information
     -H, --hostname HOSTNAME          Hostname/IP address of your Varnish server. Default is localhost
     -p, --port PORT                  Port your Varnish server is listening on. Default is 80
+    -n, --num-pages NUM              Number of pages to crawl when in spider mode
 
 ## Examples
 
@@ -49,3 +50,13 @@ Provided your VCL has something akin to the following in it:
 ...then you should be able to quickly purge an entire domain's worth of pages and resources by simply issuing the command:
 
 	$ varnish.rb purge www.example.com
+
+### Repopulating the cache
+
+If you've purged a whole domain, and particularly if your backend is slow, you might want to quickly repopulate the cache so that users never see your slow misses. Well, you can! Use the `spider` action:
+
+	$ varnish.rb spider www.example.com
+
+`spider` accepts either a hostname or a URL as its starting point, and will only fetch pages on the same domain as its origin. You can limit the number of pages it will process using the `-n` parameter:
+
+	$ varnish.rb -n 500 spider www.example.com

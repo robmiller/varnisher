@@ -61,4 +61,11 @@ case action
   
   when "spider"
     VarnishToolkit::Spider.new target
+
+  when "reindex"
+    VarnishToolkit::DomainPurger.new target
+    VarnishToolkit::Spider.new target
+
+  else
+    puts "Invalid action."
 end
