@@ -60,3 +60,12 @@ If you've purged a whole domain, and particularly if your backend is slow, you m
 `spider` accepts either a hostname or a URL as its starting point, and will only fetch pages on the same domain as its origin. You can limit the number of pages it will process using the `-n` parameter:
 
 	$ varnish.rb -n 500 spider www.example.com
+
+If you'd like to combine purging and spidering, you can use the `reindex` action:
+
+	$ varnish.rb reindex www.example.com
+
+… which is functionally equivalent to:
+
+	$ varnish.rb purge www.example.com
+	$ varnish.rb spider www.example.com
