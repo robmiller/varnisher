@@ -65,7 +65,7 @@ If you'd like to combine purging and spidering, you can use the `reindex` action
 
 	$ varnish.rb reindex www.example.com
 
-… which is functionally equivalent to:
+…which is functionally equivalent to:
 
 	$ varnish.rb purge www.example.com
 	$ varnish.rb spider www.example.com
