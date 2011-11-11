@@ -9,17 +9,19 @@ require 'net/http'
 # 	}
 # }
 
-class DomainPurger
-  def initialize(domain)
-    s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)
-    s.print("DOMAINPURGE / HTTP/1.1\r\nHost: #{domain}\r\n\r\n")
+module VarnishToolkit
+  class DomainPurger
+    def initialize(domain)
+      s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)
+      s.print("DOMAINPURGE / HTTP/1.1\r\nHost: #{domain}\r\n\r\n")
 
-    if s.read =~ /HTTP\/1\.1 200 Purged\./
-      puts "Purged  #{domain}"
-    else
-      puts "Failed to purge #{domain}"
+      if s.read =~ /HTTP\/1\.1 200 Purged\./
+        puts "Purged  #{domain}"
+      else
+        puts "Failed to purge #{domain}"
+      end
+
+      s.close
     end
-
-    s.close
   end
 end

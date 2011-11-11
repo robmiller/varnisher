@@ -2,6 +2,7 @@
 require 'optparse'
 require 'lib/pagepurger'
 require 'lib/domainpurger'
+require 'lib/spider'
 
 $options = {}
 
@@ -27,6 +28,10 @@ optparse = OptionParser.new do |opts|
     $options[:port] = port
   end
 
+  $options[:num_pages] = 100
+  opts.on('-n', '--num-pages NUM', 'Number of pages to crawl when in spider mode') do |num|
+    $options[:num_pages] = num.to_i
+  end
 end
 
 optparse.parse!
@@ -46,11 +51,14 @@ case action
   when "purge"
     # If target is a valid URL, then assume we're purging a page and its contents.
     if target =~ /^[a-z]+:\/\//
-      PagePurger.new target
+      VarnishToolkit::PagePurger.new target
     end
 
     # If target is a hostname, assume we want to purge an entire domain.
     if target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
-      DomainPurger.new target
+      VarnishToolkit::DomainPurger.new target
     end
+  
+  when "spider"
+    VarnishToolkit::Spider.new target
 end
