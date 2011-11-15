@@ -18,7 +18,11 @@ module VarnishToolkit
   		@visited = []
   		@to_visit = []
 
-  		@to_visit << url
+  		queue_link(url)
+      # TODO: Parallel seems only to use one thread if its worker array *when first passed* contains only one element. This will fix for now but there must be a less horrible fix
+      queue_link(url)
+      queue_link(url)
+      queue_link(url)
 
   		puts "Beginning spider of #{url}"
   		spider
@@ -92,7 +96,7 @@ module VarnishToolkit
   	end
 
   	def spider
-  		Parallel.map(@to_visit, :in_threads => 16) { |url|
+  		Parallel.map(@to_visit, :in_threads => 4) { |url|
           # We've crawled too many pages
           next if @pages_hit > $options[:num_pages] && $options[:num_pages] >= 0
 
