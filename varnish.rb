@@ -1,8 +1,8 @@
 #!/usr/bin/ruby
 require 'optparse'
-require 'lib/pagepurger'
-require 'lib/domainpurger'
-require 'lib/spider'
+require './lib/pagepurger'
+require './lib/domainpurger'
+require './lib/spider'
 
 $options = {}
 
