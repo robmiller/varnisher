@@ -80,9 +80,14 @@ module VarnishToolkit
           end
 
           # Strip hash links
-          href.gsub!(/(#.*$)/, '')
+          if ( $options[:ignore_hash] )
+            href.gsub!(/(#.*?)$/, '')
+          end
 
-          # TODO: Ignore query string option
+          # Strip query strings
+          if ( $options[:ignore_query_string] )
+            href.gsub!(/(\?.*?)$/, '')
+          end
 
           begin
             href_uri = URI.parse(href)

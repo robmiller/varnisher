@@ -32,6 +32,16 @@ optparse = OptionParser.new do |opts|
   opts.on('-n', '--num-pages NUM', 'Number of pages to crawl when in spider mode') do |num|
     $options[:num_pages] = num.to_i
   end
+
+  $options[:ignore_hash] = true
+  opts.on('-#', '--hashes', 'If true, /foo.html#foo and /foo.html#bar will be seen as different in spider mode.') do
+    $options[:ignore_hash] = false 
+  end
+
+  $options[:ignore_query_string] = false
+  opts.on('-q', '--ignore-query-string', 'If true, /foo?foo=bar and /foo?foo=baz will be seen as the same in spider mode.') do
+    $options[:ignore_query_string] = true
+  end
 end
 
 optparse.parse!
