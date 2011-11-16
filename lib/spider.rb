@@ -7,7 +7,8 @@ require 'parallel'
 # likely to be dealing with after a purge), a high number of 
 # threads can be used; on fast backends, less can — but I'm not
 # sure to what extent that gives a performance hit.
-THREADS = 32
+# We also need to consider backend performance.
+THREADS = 32 
 
 module VarnishToolkit
   class Spider
@@ -77,6 +78,11 @@ module VarnishToolkit
             /^(.*)\//.match(uri.path)
             href = uri.scheme + "://" + uri.host + $1 + "/" + href.to_s
           end
+
+          # Strip hash links
+          href.gsub!(/(#.*$)/, '')
+
+          # TODO: Ignore query string option
 
           begin
             href_uri = URI.parse(href)
