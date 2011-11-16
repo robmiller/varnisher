@@ -3,6 +3,11 @@ require 'hpricot'
 require 'net/http'
 require 'parallel'
 
+# Still playing with this number. On slow backends (which we're
+# likely to be dealing with after a purge), a high number of 
+# threads can be used; on fast backends, less can.
+THREADS = 32
+
 module VarnishToolkit
   class Spider
 
@@ -18,11 +23,10 @@ module VarnishToolkit
   		@visited = []
   		@to_visit = []
 
-  		queue_link(url)
       # TODO: Parallel seems only to use one thread if its worker array *when first passed* contains only one element. This will fix for now but there must be a less horrible fix
-      queue_link(url)
-      queue_link(url)
-      queue_link(url)
+      THREADS.times do
+  		  queue_link(url)
+      end
 
   		puts "Beginning spider of #{url}"
   		spider
@@ -48,7 +52,7 @@ module VarnishToolkit
         "Accept-Charset" => "utf-8", 
         "Accept"         => "text/html"
       }
-      
+
       begin
         doc = Hpricot(Net::HTTP.get_response(uri).body)
       rescue
@@ -58,7 +62,7 @@ module VarnishToolkit
       @pages_hit += 1
 
       if $options[:verbose]
-        puts "Fetching #{url}..."
+        puts "Fetched #{url}..."
       end
 
       # Looks like a valid document! Let's parse it for links
@@ -96,7 +100,7 @@ module VarnishToolkit
   	end
 
   	def spider
-  		Parallel.map(@to_visit, :in_threads => 4) { |url|
+  		Parallel.map(@to_visit, :in_threads => THREADS) { |url|
           # We've crawled too many pages
           next if @pages_hit > $options[:num_pages] && $options[:num_pages] >= 0
 
