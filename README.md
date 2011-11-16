@@ -4,18 +4,20 @@ Administering Varnish is generally a breeze, but sometimes you want to do one of
 
 ## Usage
 
-	Usage: varnish.rb [options] action target
-    -h, --help                       Display this help
-    -v, --verbose                    Output more information
-    -H, --hostname HOSTNAME          Hostname/IP address of your Varnish server. Default is localhost
-    -p, --port PORT                  Port your Varnish server is listening on. Default is 80
-    -n, --num-pages NUM              Number of pages to crawl when in spider mode
+    Usage: varnish.rb [options] action target
+        -h, --help                       Display this help
+        -v, --verbose                    Output more information
+        -H, --hostname HOSTNAME          Hostname/IP address of your Varnish server. Default is localhost
+        -p, --port PORT                  Port your Varnish server is listening on. Default is 80
+            -n, --num-pages NUM              Number of pages to crawl when in spider mode. -1 will crawl all pages
+            -#, --hashes                     If true, /foo.html#foo and /foo.html#bar will be seen as different in spider mode
+            -q, --ignore-query-string        If true, /foo?foo=bar and /foo?foo=baz will be seen as the same in spider mode
 
-## Examples
+    ## Examples
 
-### Purging a page and all the resources on it
+    ### Purging a page and all the resources on it
 
-Quite often, it's necessary redevelop a page on a website in a way that involves changes not only to the page but also to CSS files, images, JavaScript files, etc. Purging pages in this instance can be a painful process, or at least one that requires a few `ban` commands in `varnishadm`. No longer!
+    Quite often, it's necessary redevelop a page on a website in a way that involves changes not only to the page but also to CSS files, images, JavaScript files, etc. Purging pages in this instance can be a painful process, or at least one that requires a few `ban` commands in `varnishadm`. No longer!
 
 Just enter:
 
