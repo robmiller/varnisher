@@ -5,7 +5,8 @@ require 'parallel'
 
 # Still playing with this number. On slow backends (which we're
 # likely to be dealing with after a purge), a high number of 
-# threads can be used; on fast backends, less can.
+# threads can be used; on fast backends, less can — but I'm not
+# sure to what extent that gives a performance hit.
 THREADS = 32
 
 module VarnishToolkit
@@ -23,12 +24,8 @@ module VarnishToolkit
   		@visited = []
   		@to_visit = []
 
-      # TODO: Parallel seems only to use one thread if its worker array *when first passed* contains only one element. This will fix for now but there must be a less horrible fix
-      THREADS.times do
-  		  queue_link(url)
-      end
-
   		puts "Beginning spider of #{url}"
+      crawl_page(url)
   		spider
   		puts "Done; #{@pages_hit} pages hit."
   	end
