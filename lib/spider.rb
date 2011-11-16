@@ -8,7 +8,7 @@ require 'parallel'
 # threads can be used; on fast backends, less can — but I'm not
 # sure to what extent that gives a performance hit.
 # We also need to consider backend performance.
-THREADS = 32 
+THREADS = 32
 
 module VarnishToolkit
   class Spider
@@ -38,6 +38,9 @@ module VarnishToolkit
   	def crawl_page(url)
   		# Don't crawl a page twice
   		return if @visited.include? url
+
+      # Let's not hit this again
+      @visited << url
 
   		begin
         uri = URI.parse(URI.encode(url.to_s.strip))
@@ -102,17 +105,20 @@ module VarnishToolkit
 
           @to_visit << href
       }
-
-  		# Let's not hit this again
-  		@visited << url
   	end
 
   	def spider
-  		Parallel.map(@to_visit, :in_threads => THREADS) { |url|
+  		Parallel.in_threads(THREADS) { |thread_number|
           # We've crawled too many pages
           next if @pages_hit > $options[:num_pages] && $options[:num_pages] >= 0
 
-  	      crawl_page(url)
+          while ( @to_visit.length > 0 ) do
+            begin
+              url = @to_visit.pop
+            end while ( @visited.include? url )
+
+    	      crawl_page(url)
+          end
   	    }
   	end
   end
