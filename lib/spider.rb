@@ -95,6 +95,7 @@ module VarnishToolkit
           begin
             href_uri = URI.parse(href)
           rescue
+            # No harm in this — if we can't parse it as a URI, it probably isn't one (`javascript:` links, etc.) and we can safely ignore it.
             next
           end
 
