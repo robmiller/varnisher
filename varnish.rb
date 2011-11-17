@@ -1,8 +1,16 @@
 #!/usr/bin/ruby
+unless Kernel.respond_to?(:require_relative)
+  module Kernel
+    def require_relative(path)
+      require File.join(File.dirname(caller[0]), path.to_str)
+    end
+  end
+end
+
 require 'optparse'
-require './lib/pagepurger'
-require './lib/domainpurger'
-require './lib/spider'
+require_relative 'lib/pagepurger'
+require_relative 'lib/domainpurger'
+require_relative 'lib/spider'
 
 $options = {}
 
