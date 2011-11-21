@@ -13,7 +13,7 @@ Administering Varnish is generally a breeze, but sometimes you want to do one of
             -#, --hashes                     If true, /foo.html#foo and /foo.html#bar will be seen as different in spider mode
             -q, --ignore-query-string        If true, /foo?foo=bar and /foo?foo=baz will be seen as the same in spider mode
 
-If you find yourself typing certain parameters every time you use the script, you can specify them in an RC file called `.varnishrc` in your home directory. The file format is YAML are the default options are, if you want to paste and override them:
+If you find yourself typing certain parameters every time you use the script, you can specify them in an RC file called `.varnishrc` in your home directory. The file format is YAML and the default options are, if you want to paste and override them:
 
     verbose: false
     hostname: localhost
