@@ -8,7 +8,7 @@ require 'parallel'
 # threads can be used; on fast backends, less can — but I'm not
 # sure to what extent that gives a performance hit.
 # We also need to consider backend performance.
-THREADS = 32
+THREADS = 16
 
 module VarnishToolkit
   class Spider

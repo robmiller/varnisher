@@ -13,11 +13,20 @@ Administering Varnish is generally a breeze, but sometimes you want to do one of
             -#, --hashes                     If true, /foo.html#foo and /foo.html#bar will be seen as different in spider mode
             -q, --ignore-query-string        If true, /foo?foo=bar and /foo?foo=baz will be seen as the same in spider mode
 
-    ## Examples
+If you find yourself typing certain parameters every time you use the script, you can specify them in an RC file called `.varnishrc` in your home directory. The file format is YAML are the default options are, if you want to paste and override them:
 
-    ### Purging a page and all the resources on it
+    verbose: false
+    hostname: localhost
+    port: 80
+    num_pages: 100
+    ignore_hash: true
+    ignore_query_string: false
 
-    Quite often, it's necessary redevelop a page on a website in a way that involves changes not only to the page but also to CSS files, images, JavaScript files, etc. Purging pages in this instance can be a painful process, or at least one that requires a few `ban` commands in `varnishadm`. No longer!
+## Examples
+
+### Purging a page and all the resources on it
+
+Quite often, it's necessary redevelop a page on a website in a way that involves changes not only to the page but also to CSS files, images, JavaScript files, etc. Purging pages in this instance can be a painful process, or at least one that requires a few `ban` commands in `varnishadm`. No longer!
 
 Just enter:
 
