@@ -23,7 +23,7 @@ module VarnishToolkit
         puts "\n\n"
       end
 
-      find_resources(@url)
+      fetch_page(@url)
 
       if $options[:verbose]
         puts "\n"
@@ -81,7 +81,7 @@ module VarnishToolkit
     end
     
     # Fetches a page and parses out any external resources (e.g. JavaScript files, images, CSS files) it finds on it.
-    def find_resources(url)
+    def fetch_page(url)
       begin
         uri = URI.parse(URI.encode(url.to_s.strip))
       rescue
@@ -102,6 +102,14 @@ module VarnishToolkit
         return
       end
 
+      find_resources(doc) do |resource|
+        queue_resource(resource)
+      end
+    end
+
+    def find_resources(doc)
+      return if !doc.respond_to? 'search'
+
       # A bash at an abstract representation of resources. All you need is an XPath, and what attribute to select from the matched elements.
       resource = Struct.new :name, :xpath, :attribute
       resources = [ 
@@ -116,7 +124,7 @@ module VarnishToolkit
           if $options[:verbose]
             puts "Found #{resource.name}: #{att}"
           end
-          queue_resource(att)
+          yield att
         }
       }
     end
