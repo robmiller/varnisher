@@ -2,6 +2,10 @@
 
 Administering Varnish is generally a breeze, but sometimes you want to do one of the few things that aren't painless out of the box. Hopefully, that's where this toolbox comes in.
 
+Varnish Toolkit relies on the wonderful libraries [hpricot](http://hpricot.com/), by why the lucky stiff, and [Parallel](https://github.com/grosser/parallel), by Michael Grosser. If you don't have them, install them with:
+
+    $ sudo gem install hpricot parallel
+
 ## Usage
 
     Usage: varnish.rb [options] action target
