@@ -103,6 +103,9 @@ module VarnishToolkit
       end
 
       find_resources(doc) do |resource|
+        if $options[:verbose]
+            puts "Found #{resource}"
+          end
         queue_resource(resource)
       end
     end
@@ -121,9 +124,6 @@ module VarnishToolkit
       resources.each { |resource|
         doc.search(resource.xpath).each { |e|
           att = e.get_attribute(resource.attribute)
-          if $options[:verbose]
-            puts "Found #{resource.name}: #{att}"
-          end
           yield att
         }
       }
