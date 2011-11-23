@@ -3,10 +3,10 @@ require 'net/http'
 # This requires a special bit of VCL:
 #
 # if ( req.request == "DOMAINPURGE" ) {
-# 	if ( client.ip ~ auth ) {
-# 		ban("obj.http.x-host == " + req.http.host);
-# 		error 200 "Purged.";
-# 	}
+#   if ( client.ip ~ auth ) {
+#     ban("obj.http.x-host == " + req.http.host);
+#     error 200 "Purged.";
+#   }
 # }
 
 module VarnishToolkit

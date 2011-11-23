@@ -13,36 +13,36 @@ THREADS = 16
 module VarnishToolkit
   class Spider
 
-  	def initialize(url)
+    def initialize(url)
       if url =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
         url = 'http://' + url
       end
 
-  		@uri = URI.parse(url)
+      @uri = URI.parse(url)
 
-  		@pages_hit = 0
+      @pages_hit = 0
 
-  		@visited = []
-  		@to_visit = []
+      @visited = []
+      @to_visit = []
 
-  		puts "Beginning spider of #{url}"
+      puts "Beginning spider of #{url}"
       crawl_page(url)
-  		spider
-  		puts "Done; #{@pages_hit} pages hit."
-  	end
+      spider
+      puts "Done; #{@pages_hit} pages hit."
+    end
 
-  	def queue_link(url)
-  		@to_visit << url
-  	end
+    def queue_link(url)
+      @to_visit << url
+    end
 
-  	def crawl_page(url)
-  		# Don't crawl a page twice
-  		return if @visited.include? url
+    def crawl_page(url)
+      # Don't crawl a page twice
+      return if @visited.include? url
 
       # Let's not hit this again
       @visited << url
 
-  		begin
+      begin
         uri = URI.parse(URI.encode(url.to_s.strip))
       rescue
         return
@@ -72,7 +72,7 @@ module VarnishToolkit
 
         @to_visit << link
       end
-  	end
+    end
 
     def find_links(doc, url)
       return if !doc.respond_to? 'search'
@@ -123,8 +123,8 @@ module VarnishToolkit
       }
     end
 
-  	def spider
-  		Parallel.in_threads(THREADS) { |thread_number|
+    def spider
+      Parallel.in_threads(THREADS) { |thread_number|
           # We've crawled too many pages
           next if @pages_hit > $options[:num_pages] && $options[:num_pages] >= 0
 
@@ -133,9 +133,9 @@ module VarnishToolkit
               url = @to_visit.pop
             end while ( @visited.include? url )
 
-    	      crawl_page(url)
+            crawl_page(url)
           end
-  	    }
-  	end
+        }
+    end
   end
 end
