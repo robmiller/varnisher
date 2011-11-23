@@ -66,6 +66,23 @@ module VarnishToolkit
         puts "Fetched #{url}..."
       end
 
+      find_links(doc, url) do |link|
+        next if @visited.include? link
+        next if @to_visit.include? link
+
+        @to_visit << link
+      end
+  	end
+
+    def find_links(doc, url)
+      return if !doc.respond_to? 'search'
+
+      begin
+        uri = URI.parse(URI.encode(url.to_s.strip))
+      rescue
+        return
+      end
+
       # Looks like a valid document! Let's parse it for links
       doc.search("//a[@href]").each { |e|
           href = e.get_attribute("href")
@@ -101,12 +118,10 @@ module VarnishToolkit
 
           next if href_uri.host != uri.host
           next if href_uri.scheme != 'http'
-          next if @visited.include? href
-          next if @to_visit.include? href
 
-          @to_visit << href
+          yield href
       }
-  	end
+    end
 
   	def spider
   		Parallel.in_threads(THREADS) { |thread_number|
