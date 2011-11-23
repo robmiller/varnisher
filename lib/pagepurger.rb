@@ -108,7 +108,7 @@ module VarnishToolkit
     end
 
     def find_resources(doc)
-      return if !doc.respond_to? 'search'
+      return unless doc.respond_to? 'search'
 
       # A bash at an abstract representation of resources. All you need is an XPath, and what attribute to select from the matched elements.
       resource = Struct.new :name, :xpath, :attribute
@@ -144,7 +144,7 @@ module VarnishToolkit
         end
 
         # If we're dealing with a path-relative URL, make it relative to the current directory.
-        if !(url.to_s =~ /[a-z]+:\/\//)
+        unless url.to_s =~ /[a-z]+:\/\//
           # Take everything up to the final / in the path to be the current directory.
           /^(.*)\//.match(@uri.path)
           url = @uri.scheme + "://" + @uri.host + $1 + "/" + url.to_s

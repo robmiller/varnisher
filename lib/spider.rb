@@ -75,7 +75,7 @@ module VarnishToolkit
     end
 
     def find_links(doc, url)
-      return if !doc.respond_to? 'search'
+      return unless doc.respond_to? 'search'
 
       begin
         uri = URI.parse(URI.encode(url.to_s.strip))
@@ -93,7 +93,7 @@ module VarnishToolkit
           end
 
           # If we're dealing with a path-relative URL, make it relative to the current directory.
-          if !(url.to_s =~ /[a-z]+:\/\//)
+          unless url.to_s =~ /[a-z]+:\/\//
             # Take everything up to the final / in the path to be the current directory.
             /^(.*)\//.match(uri.path)
             href = uri.scheme + "://" + uri.host + $1 + "/" + href.to_s
