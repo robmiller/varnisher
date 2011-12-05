@@ -3,13 +3,6 @@ require 'hpricot'
 require 'net/http'
 require 'parallel'
 
-# Still playing with this number. On slow backends (which we're
-# likely to be dealing with after a purge), a high number of 
-# threads can be used; on fast backends, less can — but I'm not
-# sure to what extent that gives a performance hit.
-# We also need to consider backend performance.
-THREADS = 16
-
 module VarnishToolkit
   class Spider
 
@@ -124,7 +117,7 @@ module VarnishToolkit
     end
 
     def spider
-      Parallel.in_threads(THREADS) { |thread_number|
+      Parallel.in_threads($options[:spider_threads]) { |thread_number|
           # We've crawled too many pages
           next if @pages_hit > $options[:num_pages] && $options[:num_pages] >= 0
 

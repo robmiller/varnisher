@@ -19,6 +19,7 @@ $options = {
   :port                => 80,
   :num_pages           => 100,
   :ignore_hash         => true,
+  :spider_threads      => 16,
   :ignore_query_string => false
 }
 
@@ -51,6 +52,10 @@ optparse = OptionParser.new do |opts|
 
   opts.on('-n', '--num-pages NUM', 'Number of pages to crawl when in spider mode. -1 will crawl all pages') do |num|
     $options[:num_pages] = num.to_i
+  end
+
+  opts.on('-t', '--spider-threads NUM', 'Number of threads to use when spidering. Default is 16') do |num|
+    $options[:spider_threads] = num.to_i
   end
 
   opts.on('-#', '--hashes', 'If true, /foo.html#foo and /foo.html#bar will be seen as different in spider mode') do
