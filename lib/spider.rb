@@ -85,10 +85,19 @@ module VarnishToolkit
         return
       end
 
-      # Looks like a valid document! Let's parse it for links
-      doc.search("//a[@href]").each { |e|
-          href = e.get_attribute("href")
+      hrefs = []
 
+      # Looks like a valid document! Let's parse it for links
+      doc.search("//a[@href]").each do |e|
+        hrefs << e.get_attribute("href")
+      end
+
+      # Let's also look for commented-out URIs
+      doc.search("//comment()").each do |e|
+        e.to_html.scan(/https?:\/\/[^\s\"]*/) { |url| hrefs << url; }
+      end
+
+      hrefs.each do |href|
           # Skip mailto links
           next if href =~ /^mailto:/
 
@@ -135,7 +144,7 @@ module VarnishToolkit
           next unless href_uri.scheme =~ /^https?$/
 
           yield href
-      }
+      end
     end
 
     def spider
