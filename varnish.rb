@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 unless Kernel.respond_to?(:require_relative)
   module Kernel
     def require_relative(path)
