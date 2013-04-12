@@ -2,6 +2,7 @@ require 'rubygems'
 require 'hpricot'
 require 'net/http'
 require 'parallel'
+require 'letters'
 
 module VarnishToolkit
   class Spider
@@ -28,7 +29,7 @@ module VarnishToolkit
       @to_visit << url
     end
 
-    def crawl_page(url)
+    def crawl_page(url, limit = 10)
       # Don't crawl a page twice
       return if @visited.include? url
 
@@ -42,13 +43,21 @@ module VarnishToolkit
       end
       
       headers = {
-        "User-Agent"     => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.106 Safari/535.2",
-        "Accept-Charset" => "utf-8", 
-        "Accept"         => "text/html"
+        "User-Agent"     => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31",
+        "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.3", 
+        "Accept"         => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
       }
 
       begin
-        doc = Hpricot(Net::HTTP.get_response(uri).body)
+        req = Net::HTTP::Get.new(uri.path, headers)
+        response = Net::HTTP.start(uri.host, uri.port) { |http| http.request(req) }
+
+        case response
+        when Net::HTTPRedirection
+          return crawl_page(response['location'], limit - 1)
+        when Net::HTTPSuccess
+          doc = Hpricot(response.body)
+        end
       rescue
         return
       end
@@ -79,6 +88,9 @@ module VarnishToolkit
       # Looks like a valid document! Let's parse it for links
       doc.search("//a[@href]").each { |e|
           href = e.get_attribute("href")
+
+          # Skip mailto links
+          next if href =~ /^mailto:/
 
           # If we're dealing with a host-relative URL (e.g. <img src="/foo/bar.jpg">), absolutify it.
           if href.to_s =~ /^\//  
@@ -120,7 +132,7 @@ module VarnishToolkit
           end
 
           next if href_uri.host != uri.host
-          next if href_uri.scheme != 'http'
+          next unless href_uri.scheme =~ /^https?$/
 
           yield href
       }
