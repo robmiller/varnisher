@@ -2,7 +2,6 @@ require 'rubygems'
 require 'hpricot'
 require 'net/http'
 require 'parallel'
-require 'letters'
 
 module VarnishToolkit
   class Spider
