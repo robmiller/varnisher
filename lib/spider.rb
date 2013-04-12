@@ -86,11 +86,21 @@ module VarnishToolkit
           end
 
           # If we're dealing with a path-relative URL, make it relative to the current directory.
-          unless url.to_s =~ /[a-z]+:\/\//
+          unless href.to_s =~ /[a-z]+:\/\//
             # Take everything up to the final / in the path to be the current directory.
-            /^(.*)\//.match(uri.path)
-            href = uri.scheme + "://" + uri.host + $1 + "/" + href.to_s
+            if uri.path =~ /\//
+              /^(.*)\//.match(uri.path)
+              path = $1
+            # If we're on the homepage, then we don't need a path.
+            else
+              path = ""
+            end
+
+            href = uri.scheme + "://" + uri.host + path + "/" + href.to_s
           end
+
+          # At this point, we should have an absolute URL regardless of
+          # its original format.
 
           # Strip hash links
           if ( $options[:ignore_hash] )
