@@ -41,10 +41,10 @@ module VarnishToolkit
       rescue
         return
       end
-      
+
       headers = {
         "User-Agent"     => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31",
-        "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.3", 
+        "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
         "Accept"         => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
       }
 
@@ -93,7 +93,7 @@ module VarnishToolkit
           next if href =~ /^mailto:/
 
           # If we're dealing with a host-relative URL (e.g. <img src="/foo/bar.jpg">), absolutify it.
-          if href.to_s =~ /^\//  
+          if href.to_s =~ /^\//
             href = uri.scheme + "://" + uri.host + href.to_s
           end
 
@@ -143,7 +143,7 @@ module VarnishToolkit
           # We've crawled too many pages
           next if @pages_hit > $options[:num_pages] && $options[:num_pages] >= 0
 
-          while ( @to_visit.length > 0 ) do
+          while @to_visit.length > 0 do
             begin
               url = @to_visit.pop
             end while ( @visited.include? url )
