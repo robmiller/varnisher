@@ -1,96 +1,107 @@
 #!/usr/bin/env ruby
 
-require 'optparse'
+require 'bundler'
+Bundler.setup
+
+require 'main'
 require 'yaml'
 
 require 'varnisher'
 
-$options = {
-  :verbose             => false,
-  :hostname            => 'localhost',
-  :port                => 80,
-  :num_pages           => 100,
-  :ignore_hash         => true,
-  :spider_threads      => 16,
-  :ignore_query_string => false
+Main {
+  examples "varnisher purge http://example.com", "varnisher spider example.com", "varnisher purge --reindex example.com"
+
+  description "Varnisher is a set of tools for working with the Varnish HTTP cache."
+
+  argument 'target'
+
+  option('v', 'verbose') {
+    description "If given, Varnisher will be noisier about what it's up to."
+  }
+
+  option('H', 'hostname') {
+    argument :required
+    description "The hostname/IP address of your Varnish server."
+    default "localhost"
+  }
+
+  option('p', 'port') {
+    argument :required
+    cast :int
+    description "The port Varnish is listening on."
+    default 80
+  }
+
+  def before_run
+    load_config
+  end
+
+  mode "purge" do
+    argument('target') { description "The URL or hostname to purge" }
+
+    option('reindex') {
+      description "If you specify a hostname to purge, this option will respider that hostname after the purging is complete. This will keep your cache as warm as possible."
+    }
+
+    def run
+      target = params['target'].value
+
+      # If target is a valid URL, then assume we're purging a page and its contents.
+      if target =~ /^[a-z]+:\/\//
+        Varnisher::PagePurger.new target
+      end
+
+      # If target is a hostname, assume we want to purge an entire domain.
+      if target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
+        Varnisher::DomainPurger.new target
+
+        if params['reindex'].given?
+          Varnisher::Spider.new "http://#{target}/"
+        end
+      end
+    end
+  end
+
+  mode "spider" do
+    argument('target') { description "The URL to begin spidering from." }
+
+    option('n', 'num-pages') {
+      argument :required
+      cast :int
+      description "Maximum number of pages to crawl. Setting this to -1 (the default) will impose no limit."
+      default -1
+    }
+
+    option('t', 'threads') {
+      argument :required
+      cast :int
+      description "Spidering is done in parallel; this variable controls how many threads will be used."
+      default 16
+    }
+
+    option('#', 'ignore-hashes') {
+      description "When given, /foo#foo and /foo#bar will be treated as separate URLs; the default is to treat them as the same resource."
+    }
+
+    option('q', 'ignore-query-strings') {
+      description "When given, /foo?foo=bar and /foo?foo=baz will be treated as the same resource."
+    }
+
+    def run
+      target = params['target'].value
+
+      Varnisher::Spider.new target
+    end
+  end
+
+  def load_config
+    $options = params.to_options
+
+    rcfile = File.expand_path("~/.varnishrc")
+    if FileTest.readable? rcfile
+      rc = YAML::load(File.open(rcfile))
+      $options.merge!(rc)
+    end
+  end
 }
 
-rcfile = File.expand_path("~/.varnishrc")
-if FileTest.readable? rcfile
-  rc = YAML::load(File.open(rcfile))
-  # Convert to symbols
-  rc = rc.inject({}){ |memo,(k,v)| memo[k.to_sym] = v; memo }
-  $options.merge!(rc)
-end
-
-optparse = OptionParser.new do |opts|
-  opts.banner = 'Usage: varnish.rb [options] action target'
-
-  opts.on('-h', '--help', 'Display this help') do
-    puts opts
-  end
-
-  opts.on('-v', '--verbose', 'Output more information') do
-    $options[:verbose] = true
-  end
-
-  opts.on('-H', '--hostname HOSTNAME', 'Hostname/IP address of your Varnish server. Default is localhost') do |hostname|
-    $options[:hostname] = hostname
-  end
-
-  opts.on('-p', '--port PORT', 'Port your Varnish server is listening on. Default is 80') do |port|
-    $options[:port] = port
-  end
-
-  opts.on('-n', '--num-pages NUM', 'Number of pages to crawl when in spider mode. -1 will crawl all pages') do |num|
-    $options[:num_pages] = num.to_i
-  end
-
-  opts.on('-t', '--spider-threads NUM', 'Number of threads to use when spidering. Default is 16') do |num|
-    $options[:spider_threads] = num.to_i
-  end
-
-  opts.on('-#', '--hashes', 'If true, /foo.html#foo and /foo.html#bar will be seen as different in spider mode') do
-    $options[:ignore_hash] = false 
-  end
-
-  opts.on('-q', '--ignore-query-string', 'If true, /foo?foo=bar and /foo?foo=baz will be seen as the same in spider mode') do
-    $options[:ignore_query_string] = true
-  end
-end
-
-optparse.parse!
-
-# All our libs use these constants.
-PROXY_HOSTNAME = $options[:hostname]
-PROXY_PORT = $options[:port].to_i
-
-if ( ARGV.length < 2 )
-  puts "You must specify both an action and a target."
-end
-
-action = ARGV[0]
-target = ARGV[1]
-
-case action
-  when "purge"
-    # If target is a valid URL, then assume we're purging a page and its contents.
-    if target =~ /^[a-z]+:\/\//
-      Varnisher::PagePurger.new target
-    end
-
-    # If target is a hostname, assume we want to purge an entire domain.
-    if target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
-      Varnisher::DomainPurger.new target
-    end
-  
-  when "spider"
-    Varnisher::Spider.new target
-
-  when "reindex"
-    Varnisher::DomainPurger.new target
-    Varnisher::Spider.new target
-
-  else
-    puts "Invalid action."
-end
