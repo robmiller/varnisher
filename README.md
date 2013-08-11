@@ -15,9 +15,11 @@ Varnisher lets you do things like:
 ## Installation
 
 Varnish requires Ruby >1.9.3 to run. If you've got a recent Ruby
-installed, then Varnisher can be installed by running:
+installed, then Varnisher can be installed easily via RubyGems.
 
-	gem install varnisher
+The latest prerelease is 1.0.beta.2, which can be installed with:
+
+	gem install varnisher --pre
 
 ## Usage
 
