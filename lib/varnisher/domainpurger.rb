@@ -12,7 +12,7 @@ require 'net/http'
 module Varnisher
   class DomainPurger
     def initialize(domain)
-      s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)
+      s = TCPSocket.open($options['hostname'], $options['port'])
       s.print("DOMAINPURGE / HTTP/1.1\r\nHost: #{domain}\r\n\r\n")
 
       if s.read =~ /HTTP\/1\.1 200 Purged\./
