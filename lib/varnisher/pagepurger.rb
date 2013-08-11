@@ -19,13 +19,13 @@ module Varnisher
       # Then, do a fresh GET of the page and queue any resources we find on it.
       puts "Looking for external resources on #{@url}..."
 
-      if $options[:verbose]
+      if $options["verbose"]
         puts "\n\n"
       end
 
       fetch_page(@url)
 
-      if $options[:verbose]
+      if $options["verbose"]
         puts "\n"
       end
 
@@ -44,13 +44,13 @@ module Varnisher
       # Now, purge all of the resources we just queued.
       puts "Purging resources..."
 
-      if $options[:verbose]
+      if $options["verbose"]
         puts "\n\n"
       end
 
       purge_queue
 
-      if $options[:verbose]
+      if $options["verbose"]
         puts "\n"
       end
       
@@ -66,10 +66,10 @@ module Varnisher
         return
       end
 
-      s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)
+      s = TCPSocket.open($options['hostname'], $options['port'])
       s.print("PURGE #{uri.path} HTTP/1.1\r\nHost: #{uri.host}\r\n\r\n")
 
-      if $options[:verbose]
+      if $options["verbose"]
         if s.read =~ /HTTP\/1\.1 200 Purged\./
           puts "Purged  #{url}"
         else
@@ -103,7 +103,7 @@ module Varnisher
       end
 
       find_resources(doc) do |resource|
-        if $options[:verbose]
+        if $options["verbose"]
             puts "Found #{resource}"
           end
         queue_resource(resource)
@@ -169,7 +169,7 @@ module Varnisher
     # Processes the queue of URLs, sending a purge request for each of them.
     def purge_queue()
       Parallel.map(@urls) { |url|
-        if $options[:verbose]
+        if $options["verbose"]
           puts "Purging #{url}..."
         end
 

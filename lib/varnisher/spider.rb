@@ -63,7 +63,7 @@ module Varnisher
 
       @pages_hit += 1
 
-      if $options[:verbose]
+      if $options["verbose"]
         puts "Fetched #{url}..."
       end
 
@@ -123,12 +123,12 @@ module Varnisher
           # its original format.
 
           # Strip hash links
-          if ( $options[:ignore_hash] )
+          if ( $options["ignore-hashes"] )
             href.gsub!(/(#.*?)$/, '')
           end
 
           # Strip query strings
-          if ( $options[:ignore_query_string] )
+          if ( $options["ignore-query-strings"] )
             href.gsub!(/(\?.*?)$/, '')
           end
 
@@ -147,9 +147,12 @@ module Varnisher
     end
 
     def spider
-      Parallel.in_threads($options[:spider_threads]) { |thread_number|
+      threads = $options["threads"] || 16
+      num_pages = $options["num-pages"] || -1
+
+      Parallel.in_threads(threads) { |thread_number|
           # We've crawled too many pages
-          next if @pages_hit > $options[:num_pages] && $options[:num_pages] >= 0
+          next if @pages_hit > num_pages && num_pages >= 0
 
           while @to_visit.length > 0 do
             begin

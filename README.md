@@ -21,16 +21,33 @@ installed, then Varnisher can be installed by running:
 
 ## Usage
 
-    Usage: varnisher [options] action target
-        -h, --help                       Display this help
-        -v, --verbose                    Output more information
-        -H, --hostname HOSTNAME          Hostname/IP address of your Varnish server. Default is localhost
-        -p, --port PORT                  Port your Varnish server is listening on. Default is 80
-        -n, --num-pages NUM              Number of pages to crawl when in spider mode. -1 will crawl all pages
-        -#, --hashes                     If true, /foo.html#foo and /foo.html#bar will be seen as different in spider mode
-        -q, --ignore-query-string        If true, /foo?foo=bar and /foo?foo=baz will be seen as the same in spider mode
+	NAME
+	varnisher
 
-If you find yourself typing certain parameters every time you use the script, you can specify them in an RC file called `.varnishrc` in your home directory. The file format is YAML and the default options are, if you want to paste and override them:
+	SYNOPSIS
+	varnisher (purge|spider) [options]+
+
+	DESCRIPTION
+	Varnisher is a set of tools for working with the Varnish HTTP cache.
+
+	PARAMETERS
+	--verbose, -v
+		If given, Varnisher will be noisier about what it's up to.
+	--hostname=hostname, -H (0 ~> hostname=localhost)
+		The hostname/IP address of your Varnish server.
+	--port=port, -p (0 ~> int(port=80))
+		The port Varnish is listening on.
+	--help, -h
+
+	EXAMPLES
+	varnisher purge http://example.com
+	varnisher spider example.com
+	varnisher purge --reindex example.com
+
+If you find yourself typing certain parameters every time you use the
+script, you can specify them in an RC file called `.varnishrc` in your
+home directory. The file format is YAML and the default options are, if
+you want to paste and override them:
 
     verbose: false
     hostname: localhost
@@ -43,17 +60,25 @@ If you find yourself typing certain parameters every time you use the script, yo
 
 ### Purging a page and all the resources on it
 
-Quite often, it's necessary redevelop a page on a website in a way that involves changes not only to the page but also to CSS files, images, JavaScript files, etc. Purging pages in this instance can be a painful process, or at least one that requires a few `ban` commands in `varnishadm`. No longer!
+Quite often, it's necessary redevelop a page on a website in a way that
+involves changes not only to the page but also to CSS files, images,
+JavaScript files, etc. Purging pages in this instance can be a painful
+process, or at least one that requires a few `ban` commands in
+`varnishadm`. No longer!
 
 Just enter:
 
 	$ varnisher purge http://www.example.com/path/to/page
 
-...and `/path/to/page`, along with all its images, CSS files, JavaScript files, and other external accoutrements, will be purged from Varnish's cache. 
+...and `/path/to/page`, along with all its images, CSS files, JavaScript
+files, and other external accoutrements, will be purged from Varnish's
+cache.
 
-As a bonus, this action is multithreaded, meaning even resource-heavy pages should purge quickly and evenly.
+As a bonus, this action is multithreaded, meaning even resource-heavy
+pages should purge quickly and evenly.
 
-This action requires your VCL to have something like the following, which is fairly standard:
+This action requires your VCL to have something like the following,
+which is fairly standard:
 
 	if (req.request == "PURGE") {
         if ( client.ip ~ auth ) {
@@ -62,7 +87,9 @@ This action requires your VCL to have something like the following, which is fai
         }
     }
 
-(For an explanation of just what `obj.http.x-url` means, and why you should use it rather than `req.url`, see [this page](http://kristianlyng.wordpress.com/2010/07/28/smart-bans-with-varnish/).)
+(For an explanation of just what `obj.http.x-url` means, and why you
+should use it rather than `req.url`, see [this
+page](http://kristianlyng.wordpress.com/2010/07/28/smart-bans-with-varnish/).)
 
 ### Purging an entire domain
 
@@ -75,23 +102,29 @@ Provided your VCL has something akin to the following in it:
             }
     }
 
-...then you should be able to quickly purge an entire domain's worth of pages and resources by simply issuing the command:
+...then you should be able to quickly purge an entire domain's worth of
+pages and resources by simply issuing the command:
 
 	$ varnisher purge www.example.com
 
 ### Repopulating the cache
 
-If you've purged a whole domain, and particularly if your backend is slow, you might want to quickly repopulate the cache so that users never see your slow misses. Well, you can! Use the `spider` action:
+If you've purged a whole domain, and particularly if your backend is
+slow, you might want to quickly repopulate the cache so that users never
+see your slow misses. Well, you can! Use the `spider` action:
 
 	$ varnisher spider www.example.com
 
-`spider` accepts either a hostname or a URL as its starting point, and will only fetch pages on the same domain as its origin. You can limit the number of pages it will process using the `-n` parameter:
+`spider` accepts either a hostname or a URL as its starting point, and
+will only fetch pages on the same domain as its origin. You can limit
+the number of pages it will process using the `-n` parameter:
 
 	$ varnisher -n 500 spider www.example.com
 
-If you'd like to combine purging and spidering, you can use the `reindex` action:
+If you'd like to combine purging and spidering, you can use the
+`reindex` option:
 
-	$ varnisher reindex www.example.com
+	$ varnisher purge --reindex www.example.com
 
 …which is functionally equivalent to:
 
