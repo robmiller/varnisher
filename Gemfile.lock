@@ -1,0 +1,18 @@
+PATH
+  remote: .
+  specs:
+    varnisher (1.0)
+      hpricot (~> 0.8.6)
+      parallel (~> 0.7.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    hpricot (0.8.6)
+    parallel (0.7.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  varnisher!

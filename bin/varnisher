@@ -1,17 +1,9 @@
 #!/usr/bin/env ruby
-unless Kernel.respond_to?(:require_relative)
-  module Kernel
-    def require_relative(path)
-      require File.join(File.dirname(caller[0]), path.to_str)
-    end
-  end
-end
 
 require 'optparse'
 require 'yaml'
-require_relative 'lib/pagepurger'
-require_relative 'lib/domainpurger'
-require_relative 'lib/spider'
+
+require 'varnisher'
 
 $options = {
   :verbose             => false,
@@ -84,20 +76,20 @@ case action
   when "purge"
     # If target is a valid URL, then assume we're purging a page and its contents.
     if target =~ /^[a-z]+:\/\//
-      VarnishToolkit::PagePurger.new target
+      Varnisher::PagePurger.new target
     end
 
     # If target is a hostname, assume we want to purge an entire domain.
     if target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
-      VarnishToolkit::DomainPurger.new target
+      Varnisher::DomainPurger.new target
     end
   
   when "spider"
-    VarnishToolkit::Spider.new target
+    Varnisher::Spider.new target
 
   when "reindex"
-    VarnishToolkit::DomainPurger.new target
-    VarnishToolkit::Spider.new target
+    Varnisher::DomainPurger.new target
+    Varnisher::Spider.new target
 
   else
     puts "Invalid action."
