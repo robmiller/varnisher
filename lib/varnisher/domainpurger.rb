@@ -9,7 +9,7 @@ require 'net/http'
 #   }
 # }
 
-module VarnishToolkit
+module Varnisher
   class DomainPurger
     def initialize(domain)
       s = TCPSocket.open(PROXY_HOSTNAME, PROXY_PORT)

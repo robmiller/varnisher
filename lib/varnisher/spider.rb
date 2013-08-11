@@ -3,7 +3,7 @@ require 'hpricot'
 require 'net/http'
 require 'parallel'
 
-module VarnishToolkit
+module Varnisher
   class Spider
 
     def initialize(url)
