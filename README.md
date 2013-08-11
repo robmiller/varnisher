@@ -52,9 +52,9 @@ you want to paste and override them:
     verbose: false
     hostname: localhost
     port: 80
-    num_pages: 100
-    ignore_hash: true
-    ignore_query_string: false
+    num-pages: -1
+    ignore-hashes: true
+    ignore-query-strings: false
 
 ## Examples
 
