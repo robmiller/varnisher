@@ -1,14 +1,27 @@
-# Varnish Toolkit
+# varnisher
 
-Administering Varnish is generally a breeze, but sometimes you want to do one of the few things that aren't painless out of the box. Hopefully, that's where this toolbox comes in.
+Administering Varnish is generally a breeze, but sometimes you want to
+do one of the few things that aren't painless out of the box. Hopefully,
+that's where this toolbox comes in.
 
-Varnish Toolkit relies on the wonderful libraries [hpricot](http://hpricot.com/), by why the lucky stiff, and [Parallel](https://github.com/grosser/parallel), by Michael Grosser. If you don't have them, install them with:
+Varnisher lets you do things like:
 
-    $ sudo gem install hpricot parallel
+* Purge a webpage and everything (e.g. images, JavaScript files, CSS
+  files) referenced on that page
+* Spider an entire domain — useful for priming a cache
+* Purge an entire domain, including optionally re-spidering it
+  afterwards to keep the cache warm
+
+## Installation
+
+Varnish requires Ruby >1.9.3 to run. If you've got a recent Ruby
+installed, then Varnisher can be installed by running:
+
+	gem install varnisher
 
 ## Usage
 
-    Usage: varnish.rb [options] action target
+    Usage: varnisher [options] action target
         -h, --help                       Display this help
         -v, --verbose                    Output more information
         -H, --hostname HOSTNAME          Hostname/IP address of your Varnish server. Default is localhost
@@ -34,7 +47,7 @@ Quite often, it's necessary redevelop a page on a website in a way that involves
 
 Just enter:
 
-	$ varnish.rb purge http://www.example.com/path/to/page
+	$ varnisher purge http://www.example.com/path/to/page
 
 ...and `/path/to/page`, along with all its images, CSS files, JavaScript files, and other external accoutrements, will be purged from Varnish's cache. 
 
@@ -64,23 +77,23 @@ Provided your VCL has something akin to the following in it:
 
 ...then you should be able to quickly purge an entire domain's worth of pages and resources by simply issuing the command:
 
-	$ varnish.rb purge www.example.com
+	$ varnisher purge www.example.com
 
 ### Repopulating the cache
 
 If you've purged a whole domain, and particularly if your backend is slow, you might want to quickly repopulate the cache so that users never see your slow misses. Well, you can! Use the `spider` action:
 
-	$ varnish.rb spider www.example.com
+	$ varnisher spider www.example.com
 
 `spider` accepts either a hostname or a URL as its starting point, and will only fetch pages on the same domain as its origin. You can limit the number of pages it will process using the `-n` parameter:
 
-	$ varnish.rb -n 500 spider www.example.com
+	$ varnisher -n 500 spider www.example.com
 
 If you'd like to combine purging and spidering, you can use the `reindex` action:
 
-	$ varnish.rb reindex www.example.com
+	$ varnisher reindex www.example.com
 
 …which is functionally equivalent to:
 
-	$ varnish.rb purge www.example.com
-	$ varnish.rb spider www.example.com
+	$ varnisher purge www.example.com
+	$ varnisher spider www.example.com
