@@ -24,4 +24,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'parallel', '~> 0.7.1'
 
   s.add_development_dependency 'letters', '~> 0.4.1'
+  s.add_development_dependency 'yard', '~> 0.8.7'
 end
