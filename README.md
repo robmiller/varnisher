@@ -12,6 +12,9 @@ Varnisher lets you do things like:
 * Purge an entire domain, including optionally re-spidering it
   afterwards to keep the cache warm
 
+Full documentation is available [on
+rdoc.info](http://rdoc.info/github/robmiller/varnisher).
+
 ## Installation
 
 Varnish requires Ruby >1.9.3 to run. If you've got a recent Ruby
