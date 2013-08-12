@@ -5,17 +5,17 @@ require 'parallel'
 
 module Varnisher
   class PagePurger
-    
+
     def initialize(url)
       @url = url
       @uri = URI.parse(url)
-      
+
       @urls = []
-      
+
       # First, purge the URL itself; that means we'll get up-to-date references within that page.
       puts "Purging #{@url}...\n\n"
       purge(@url)
-      
+
       # Then, do a fresh GET of the page and queue any resources we find on it.
       puts "Looking for external resources on #{@url}..."
 
@@ -35,12 +35,12 @@ module Varnisher
         puts "No resources found. Abort!"
         return
       end
-      
+
       # Let's figure out which of these resources we can actually purge — whether they're on our server, etc.
       puts "Tidying resources...\n"
       tidy_resources
       puts "#{@urls.length} purgeable resources found.\n\n"
-      
+
       # Now, purge all of the resources we just queued.
       puts "Purging resources..."
 
@@ -53,10 +53,10 @@ module Varnisher
       if $options["verbose"]
         puts "\n"
       end
-      
+
       puts "Nothing more to do!\n\n"
     end
-    
+
     # Sends a PURGE request to the Varnish server, asking it to purge the given URL from its cache.
     def purge(url)
       begin
@@ -79,7 +79,7 @@ module Varnisher
 
       s.close
     end
-    
+
     # Fetches a page and parses out any external resources (e.g. JavaScript files, images, CSS files) it finds on it.
     def fetch_page(url)
       begin
@@ -88,13 +88,13 @@ module Varnisher
         puts "Couldn't parse URL for resource-searching: #{url}"
         return
       end
-      
+
       headers = {
         "User-Agent"     => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.106 Safari/535.2",
-        "Accept-Charset" => "utf-8", 
+        "Accept-Charset" => "utf-8",
         "Accept"         => "text/html"
       }
-      
+
       begin
         doc = Hpricot(Net::HTTP.get_response(uri).body)
       rescue
@@ -115,7 +115,7 @@ module Varnisher
 
       # A bash at an abstract representation of resources. All you need is an XPath, and what attribute to select from the matched elements.
       resource = Struct.new :name, :xpath, :attribute
-      resources = [ 
+      resources = [
         resource.new('stylesheet', 'link[@rel*=stylesheet]', 'href'),
         resource.new('JavaScript file', 'script[@src]', 'src'),
         resource.new('image file', 'img[@src]', 'src')
@@ -128,18 +128,18 @@ module Varnisher
         }
       }
     end
-    
+
     # Adds a URL to the processing queue.
     def queue_resource(url)
       @urls << url.to_s
     end
-    
+
     def tidy_resources
       valid_urls = []
-      
+
       @urls.each { |url|
         # If we're dealing with a host-relative URL (e.g. <img src="/foo/bar.jpg">), absolutify it.
-        if url.to_s =~ /^\//  
+        if url.to_s =~ /^\//
           url = @uri.scheme + "://" + @uri.host + url.to_s
         end
 
@@ -149,13 +149,13 @@ module Varnisher
           /^(.*)\//.match(@uri.path)
           url = @uri.scheme + "://" + @uri.host + $1 + "/" + url.to_s
         end
-        
+
         begin
           uri = URI.parse(url)
         rescue
-          next 
+          next
         end
-        
+
         # Skip URLs that aren't HTTP, or that are on different domains.
         next if uri.scheme != "http"
         next if uri.host != @uri.host
@@ -165,7 +165,7 @@ module Varnisher
 
       @urls = valid_urls.dup
     end
-    
+
     # Processes the queue of URLs, sending a purge request for each of them.
     def purge_queue()
       Parallel.map(@urls) { |url|
