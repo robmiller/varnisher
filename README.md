@@ -94,7 +94,7 @@ which is fairly standard:
 
 (For an explanation of just what `obj.http.x-url` means, and why you
 should use it rather than `req.url`, see [this
-page](http://kristianlyng.wordpress.com/2010/07/28/smart-bans-with-varnish/).)
+page](http://kly.no/posts/2010_07_28__Smart_bans_with_Varnish__.html).)
 
 ### Purging an entire domain
 
