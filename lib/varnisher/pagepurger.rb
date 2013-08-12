@@ -4,8 +4,15 @@ require 'net/http'
 require 'parallel'
 
 module Varnisher
+  # Purges an individual URL from Varnish.
   class PagePurger
 
+    # Purges the given URL from the Varnish cache.
+    #
+    # Will also purge all of the resources it finds on that page (e.g.
+    # images, CSS files, JavaScript files, etc.)
+    #
+    # @param url [String, URI] The URL to purge
     def initialize(url)
       @url = url
       @uri = URI.parse(url)
@@ -57,7 +64,25 @@ module Varnisher
       puts "Nothing more to do!\n\n"
     end
 
-    # Sends a PURGE request to the Varnish server, asking it to purge the given URL from its cache.
+    # Sends a PURGE request to the Varnish server, asking it to purge
+    # the given URL from its cache.
+    #
+    # This presupposes that you have the following VCL in your Varnish
+    # config file:
+    #
+    #     if (req.request == "PURGE") {
+    #       if ( client.ip ~ auth ) {
+    #         ban("obj.http.x-url == " + req.url + " && obj.http.x-host == " + req.http.host);
+    #         error 200 "Purged.";
+    #       }
+    #     }
+    #
+    # More about purging can be found
+    # [in the Varnish documentation][purging-and-banning].
+    #
+    # [purging-and-banning]: https://www.varnish-cache.org/docs/3.0/tutorial/purging.html
+    #
+    # @api private
     def purge(url)
       begin
         uri = URI.parse(URI.encode(url.to_s.strip))
@@ -80,7 +105,12 @@ module Varnisher
       s.close
     end
 
-    # Fetches a page and parses out any external resources (e.g. JavaScript files, images, CSS files) it finds on it.
+    # Fetches a page and parses out any external resources (e.g.
+    # JavaScript files, images, CSS files) it finds on it.
+    #
+    # @param url [String, URI]
+    #
+    # @api private
     def fetch_page(url)
       begin
         uri = URI.parse(URI.encode(url.to_s.strip))
@@ -110,30 +140,61 @@ module Varnisher
       end
     end
 
+    # Given an hpricot document, will return an array of the resources
+    # within that document.
+    #
+    # Resources include things like CSS files, images, and JavaScript
+    # files.
+    #
+    # If a block is given, the block will be executed once for each
+    # resource.
+    #
+    # @param doc An hpricot document
+    #
+    # @return [Array] An array of strings, each representing a URL
+    #
+    # @api private
     def find_resources(doc)
       return unless doc.respond_to? 'search'
 
-      # A bash at an abstract representation of resources. All you need is an XPath, and what attribute to select from the matched elements.
-      resource = Struct.new :name, :xpath, :attribute
-      resources = [
-        resource.new('stylesheet', 'link[@rel*=stylesheet]', 'href'),
-        resource.new('JavaScript file', 'script[@src]', 'src'),
-        resource.new('image file', 'img[@src]', 'src')
+      # A bash at an abstract representation of resources. All you need
+      # is an XPath, and what attribute to select from the matched
+      # elements.
+      res = Struct.new :name, :xpath, :attribute
+      res_defs = [
+        res.new('stylesheet', 'link[@rel*=stylesheet]', 'href'),
+        res.new('JavaScript file', 'script[@src]', 'src'),
+        res.new('image file', 'img[@src]', 'src')
       ]
 
-      resources.each { |resource|
-        doc.search(resource.xpath).each { |e|
+      resources = []
+
+      res_defs.each do |resource|
+        doc.search(resource.xpath).each do |e|
           att = e.get_attribute(resource.attribute)
-          yield att
-        }
-      }
+          yield att if block_given?
+          resources << att
+        end
+      end
+
+      resources
     end
 
     # Adds a URL to the processing queue.
+    #
+    # @param url [String]
+    #
+    # @api private
     def queue_resource(url)
       @urls << url.to_s
     end
 
+    # Tidies up the resource queue, converting relative URLs to
+    # absolute.
+    #
+    # @return [Array] The new URLs
+    #
+    # @api private
     def tidy_resources
       valid_urls = []
 
@@ -166,15 +227,18 @@ module Varnisher
       @urls = valid_urls.dup
     end
 
-    # Processes the queue of URLs, sending a purge request for each of them.
-    def purge_queue()
-      Parallel.map(@urls) { |url|
+    # Processes the queue of URLs, sending a purge request for each of
+    # them.
+    #
+    # @api private
+    def purge_queue
+      Parallel.map(@urls) do |url|
         if $options["verbose"]
           puts "Purging #{url}..."
         end
 
         purge(url)
-      }
+      end
     end
 
   end
