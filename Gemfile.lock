@@ -2,8 +2,8 @@ PATH
   remote: .
   specs:
     varnisher (1.0.beta.2)
-      hpricot (~> 0.8.6)
       main (~> 5.2.0)
+      nokogiri (~> 1.6.0)
       parallel (~> 0.7.1)
 
 GEM
@@ -21,7 +21,6 @@ GEM
     chronic (0.9.1)
     colorize (0.5.8)
     fattr (2.2.1)
-    hpricot (0.8.6)
     i18n (0.6.4)
     letters (0.4.1)
       activesupport
@@ -34,8 +33,11 @@ GEM
       fattr (>= 2.2.0)
       map (>= 5.1.0)
     map (6.5.1)
+    mini_portile (0.5.1)
     minitest (4.7.5)
     multi_json (1.7.7)
+    nokogiri (1.6.0)
+      mini_portile (~> 0.5.0)
     parallel (0.7.1)
     thread_safe (0.1.2)
       atomic

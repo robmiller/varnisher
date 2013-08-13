@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'hpricot'
+require 'nokogiri'
 require 'net/http'
 require 'parallel'
 
@@ -128,7 +128,7 @@ module Varnisher
       }
 
       begin
-        doc = Hpricot(Net::HTTP.get_response(uri).body)
+        doc = Nokogiri::HTML(Net::HTTP.get_response(uri).body)
       rescue
         puts "Hmm, I couldn't seem to fetch that URL. Sure it's right?\n"
         return
@@ -142,7 +142,7 @@ module Varnisher
       end
     end
 
-    # Given an hpricot document, will return an array of the resources
+    # Given a Nokogiri document, will return an array of the resources
     # within that document.
     #
     # Resources include things like CSS files, images, and JavaScript
@@ -151,29 +151,29 @@ module Varnisher
     # If a block is given, the block will be executed once for each
     # resource.
     #
-    # @param doc An hpricot document
+    # @param doc A Nokogiri document
     #
     # @return [Array] An array of strings, each representing a URL
     #
     # @api private
     def find_resources(doc)
-      return unless doc.respond_to? 'search'
+      return unless doc.respond_to? 'xpath'
 
       # A bash at an abstract representation of resources. All you need
       # is an XPath, and what attribute to select from the matched
       # elements.
-      res = Struct.new :name, :xpath, :attribute
+      res = Struct.new :name, :selector, :attribute
       res_defs = [
-        res.new('stylesheet', 'link[@rel*=stylesheet]', 'href'),
-        res.new('JavaScript file', 'script[@src]', 'src'),
-        res.new('image file', 'img[@src]', 'src')
+        res.new('stylesheet', 'link[rel~=stylesheet]', 'href'),
+        res.new('JavaScript file', 'script[src]', 'src'),
+        res.new('image file', 'img[src]', 'src')
       ]
 
       resources = []
 
       res_defs.each do |resource|
-        doc.search(resource.xpath).each do |e|
-          att = e.get_attribute(resource.attribute)
+        doc.css(resource.selector).each do |e|
+          att = e[resource.attribute]
           yield att if block_given?
           resources << att
         end

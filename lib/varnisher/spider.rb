@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'hpricot'
+require 'nokogiri'
 require 'net/http'
 require 'parallel'
 
@@ -109,7 +109,7 @@ module Varnisher
         when Net::HTTPRedirection
           return crawl_page(response['location'], redirect_limit - 1)
         when Net::HTTPSuccess
-          doc = Hpricot(response.body)
+          doc = Nokogiri::HTML(response.body)
         end
       rescue
         return
@@ -129,20 +129,20 @@ module Varnisher
       end
     end
 
-    # Given an hpricot document, will return all the links in that
+    # Given a Nokogiri document, will return all the links in that
     # document.
     #
     # "Links" are defined, for now, as the contents of the `href`
     # attributes on HTML `<a>` tags, and URLs that are mentioned in
     # comments.
     #
-    # @param doc An hpricot document
+    # @param doc A Nokogiri document
     # @param url [String, URI] The URL that the document came from;
     #   this is used to resolve relative URIs
     #
     # @api private
     def find_links(doc, url)
-      return unless doc.respond_to? 'search'
+      return unless doc.respond_to? 'xpath'
 
       begin
         uri = URI.parse(URI.encode(url.to_s.strip))
@@ -153,12 +153,12 @@ module Varnisher
       hrefs = []
 
       # Looks like a valid document! Let's parse it for links
-      doc.search("//a[@href]").each do |e|
-        hrefs << e.get_attribute("href")
+      doc.xpath("//a[@href]").each do |e|
+        hrefs << e["href"]
       end
 
       # Let's also look for commented-out URIs
-      doc.search("//comment()").each do |e|
+      doc.xpath("//comment()").each do |e|
         e.to_html.scan(/https?:\/\/[^\s\"]*/) { |url| hrefs << url; }
       end
 
