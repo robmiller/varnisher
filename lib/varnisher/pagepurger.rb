@@ -86,25 +86,12 @@ module Varnisher
     #
     # @api private
     def purge(url)
-      begin
-        uri = URI.parse(URI.encode(url.to_s.strip))
-      rescue
-        puts "Couldn't parse URL for purging: #{$!}"
-        return
+      purged = Varnisher::purge(url)
+      if purged
+        puts "Purged #{url}"
+      else
+        puts "Failed to purge #{url}"
       end
-
-      s = TCPSocket.open(Varnisher.options['hostname'], Varnisher.options['port'])
-      s.print("PURGE #{uri.path} HTTP/1.1\r\nHost: #{uri.host}\r\n\r\n")
-
-      if Varnisher.options["verbose"]
-        if s.read =~ /HTTP\/1\.1 200 Purged\./
-          puts "Purged  #{url}"
-        else
-          puts "Failed to purge #{url}"
-        end
-      end
-
-      s.close
     end
 
     # Fetches a page and parses out any external resources (e.g.
