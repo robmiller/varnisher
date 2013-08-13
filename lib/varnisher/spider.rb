@@ -228,8 +228,8 @@ module Varnisher
     #
     # @api private
     def spider
-      threads = Varnisher.options["threads"] || 16
-      num_pages = Varnisher.options["num-pages"] || -1
+      threads = Varnisher.options["threads"]
+      num_pages = Varnisher.options["num-pages"]
 
       Parallel.in_threads(threads) { |thread_number|
           # We've crawled too many pages
