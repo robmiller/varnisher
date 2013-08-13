@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
 
   s.add_runtime_dependency 'main', '~> 5.2.0'
-  s.add_runtime_dependency 'hpricot', '~> 0.8.6'
+  s.add_runtime_dependency 'nokogiri', '~> 1.6.0'
   s.add_runtime_dependency 'parallel', '~> 0.7.1'
 
   s.add_development_dependency 'letters', '~> 0.4.1'
