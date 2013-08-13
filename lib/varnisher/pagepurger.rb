@@ -19,7 +19,8 @@ module Varnisher
 
       @urls = []
 
-      # First, purge the URL itself; that means we'll get up-to-date references within that page.
+      # First, purge the URL itself; that means we'll get up-to-date
+      # references within that page.
       puts "Purging #{@url}...\n\n"
       purge(@url)
 
@@ -43,7 +44,8 @@ module Varnisher
         return
       end
 
-      # Let's figure out which of these resources we can actually purge — whether they're on our server, etc.
+      # Let's figure out which of these resources we can actually purge
+      # — whether they're on our server, etc.
       puts "Tidying resources...\n"
       tidy_resources
       puts "#{@urls.length} purgeable resources found.\n\n"
@@ -199,14 +201,19 @@ module Varnisher
       valid_urls = []
 
       @urls.each { |url|
-        # If we're dealing with a host-relative URL (e.g. <img src="/foo/bar.jpg">), absolutify it.
+
+        # If we're dealing with a host-relative URL (e.g. <img
+        # src="/foo/bar.jpg">), absolutify it.
         if url.to_s =~ /^\//
           url = @uri.scheme + "://" + @uri.host + url.to_s
         end
 
-        # If we're dealing with a path-relative URL, make it relative to the current directory.
+        # If we're dealing with a path-relative URL, make it relative to
+        # the current directory.
         unless url.to_s =~ /[a-z]+:\/\//
-          # Take everything up to the final / in the path to be the current directory.
+
+          # Take everything up to the final / in the path to be the
+          # current directory.
           /^(.*)\//.match(@uri.path)
           url = @uri.scheme + "://" + @uri.host + $1 + "/" + url.to_s
         end

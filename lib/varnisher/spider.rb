@@ -78,8 +78,8 @@ module Varnisher
     # request will be abandoned.
     #
     # @param url [String, URI] The URL of the page to fetch
-    # @param redirect_limit [Fixnum] The number of HTTP redirects to follow
-    #   before abandoning this URL
+    # @param redirect_limit [Fixnum] The number of HTTP redirects to
+    #   follow before abandoning this URL
     #
     # @api private
     def crawl_page(url, redirect_limit = 10)
@@ -137,8 +137,8 @@ module Varnisher
     # comments.
     #
     # @param doc An hpricot document
-    # @param url [String, URI] The URL that the document came from; this
-    #   is used to resolve relative URIs
+    # @param url [String, URI] The URL that the document came from;
+    #   this is used to resolve relative URIs
     #
     # @api private
     def find_links(doc, url)
@@ -166,14 +166,18 @@ module Varnisher
           # Skip mailto links
           next if href =~ /^mailto:/
 
-          # If we're dealing with a host-relative URL (e.g. <img src="/foo/bar.jpg">), absolutify it.
+          # If we're dealing with a host-relative URL (e.g. <img
+          # src="/foo/bar.jpg">), absolutify it.
           if href.to_s =~ /^\//
             href = uri.scheme + "://" + uri.host + href.to_s
           end
 
-          # If we're dealing with a path-relative URL, make it relative to the current directory.
+          # If we're dealing with a path-relative URL, make it relative
+          # to the current directory.
           unless href.to_s =~ /[a-z]+:\/\//
-            # Take everything up to the final / in the path to be the current directory.
+
+            # Take everything up to the final / in the path to be the
+            # current directory.
             if uri.path =~ /\//
               /^(.*)\//.match(uri.path)
               path = $1
@@ -201,7 +205,9 @@ module Varnisher
           begin
             href_uri = URI.parse(href)
           rescue
-            # No harm in this — if we can't parse it as a URI, it probably isn't one (`javascript:` links, etc.) and we can safely ignore it.
+            # No harm in this — if we can't parse it as a URI, it
+            # probably isn't one (`javascript:` links, etc.) and we can
+            # safely ignore it.
             next
           end
 
