@@ -22,14 +22,12 @@ Main {
   option('H', 'hostname') {
     argument :required
     description "The hostname/IP address of your Varnish server."
-    default "localhost"
   }
 
   option('p', 'port') {
     argument :required
     cast :int
     description "The port Varnish is listening on."
-    default 80
   }
 
   def before_run
@@ -69,24 +67,20 @@ Main {
       argument :required
       cast :int
       description "Maximum number of pages to crawl. Setting this to -1 (the default) will impose no limit."
-      default -1
     }
 
     option('t', 'threads') {
       argument :required
       cast :int
       description "Spidering is done in parallel; this variable controls how many threads will be used."
-      default 16
     }
 
     option('#', 'ignore-hashes') {
       description "When given, /foo#foo and /foo#bar will be treated as separate URLs; the default is to treat them as the same resource."
-      default true
     }
 
     option('q', 'ignore-query-strings') {
       description "When given, /foo?foo=bar and /foo?foo=baz will be treated as the same resource."
-      default false
     }
 
     def run
