@@ -11,13 +11,13 @@ module Varnisher
   # Our default options are set here; they can be overriden either by
   # command-line arguments or by settings in a user's ~/.varnishrc file.
   @options = {
-    verbose: false,
-    hostname: nil,
-    port: 80,
-    :'num-pages' => -1,
-    threads: 16,
-    :'ignore-hashes' => true,
-    :'ignore-query-strings' => false
+    'verbose' => false,
+    'hostname' => nil,
+    'port' => 80,
+    'num-pages' => -1,
+    'threads' => 16,
+    'ignore-hashes' => true,
+    'ignore-query-strings' => false
   }
 
   def self.options
@@ -26,6 +26,14 @@ module Varnisher
 
   def self.options=(options)
     @options = options
+
+    if options['hostname'].nil? and options['target']
+      begin
+        uri = URI.parse(options['target'])
+        options['hostname'] = uri.host
+      rescue
+      end
+    end
   end
 end
 
