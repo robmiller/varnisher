@@ -19,6 +19,10 @@ Main {
     description "If given, Varnisher will be noisier about what it's up to."
   }
 
+  option('q', 'quiet') {
+    description "If given, Varnisher will be silent apart from errors."
+  }
+
   option('H', 'hostname') {
     argument :required
     description "The hostname/IP address of your Varnish server."

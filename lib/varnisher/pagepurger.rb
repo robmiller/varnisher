@@ -78,7 +78,7 @@ module Varnisher
     def purge(url)
       purged = Varnisher::purge(url)
       if purged
-        Varnisher.log.info "Purged #{url}"
+        Varnisher.log.debug "Purged #{url}"
       else
         Varnisher.log.info "Failed to purge #{url}"
       end

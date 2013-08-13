@@ -15,6 +15,7 @@ module Varnisher
   # command-line arguments or by settings in a user's ~/.varnishrc file.
   @options = {
     'verbose' => false,
+    'quiet' => false,
     'hostname' => nil,
     'port' => 80,
     'num-pages' => -1,
@@ -43,7 +44,13 @@ module Varnisher
       end
     end
 
-    @log.level = options['verbose'] ? Logger::DEBUG : Logger::INFO
+    @log.level = if options['verbose']
+                   Logger::DEBUG
+                 elsif options['quiet']
+                   Logger::FATAL
+                 else
+                   Logger::INFO
+                 end
   end
 
   def self.log
