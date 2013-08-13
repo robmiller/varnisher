@@ -81,10 +81,12 @@ Main {
 
     option('#', 'ignore-hashes') {
       description "When given, /foo#foo and /foo#bar will be treated as separate URLs; the default is to treat them as the same resource."
+      default true
     }
 
     option('q', 'ignore-query-strings') {
       description "When given, /foo?foo=bar and /foo?foo=baz will be treated as the same resource."
+      default false
     }
 
     def run
@@ -95,13 +97,21 @@ Main {
   end
 
   def load_config
-    options = params.to_options
+    # Start with our default options.
+    options = Varnisher.options
 
+    # Check the user's RC file -- if it exists -- to see if they've
+    # specified any defaults of their own.
     rcfile = File.expand_path("~/.varnishrc")
     if FileTest.readable? rcfile
       rc = YAML::load(File.open(rcfile))
       options.merge!(rc)
     end
+
+    # The highest priority is given to command line arguments, so that
+    # the user can override things that are in their RC file if they
+    # choose to.
+    options.merge!(params.to_options.reject { |k,v| v.nil? })
 
     Varnisher.options = options
   end
