@@ -95,13 +95,15 @@ Main {
   end
 
   def load_config
-    $options = params.to_options
+    options = params.to_options
 
     rcfile = File.expand_path("~/.varnishrc")
     if FileTest.readable? rcfile
       rc = YAML::load(File.open(rcfile))
-      $options.merge!(rc)
+      options.merge!(rc)
     end
+
+    Varnisher.options = options
   end
 }
 

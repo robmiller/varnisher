@@ -16,7 +16,7 @@ module Varnisher
     #
     # @param domain [String] The hostname to purge
     def initialize(domain)
-      s = TCPSocket.open($options['hostname'], $options['port'])
+      s = TCPSocket.open(Varnisher.options['hostname'], Varnisher.options['port'])
       s.print("DOMAINPURGE / HTTP/1.1\r\nHost: #{domain}\r\n\r\n")
 
       if s.read =~ /HTTP\/1\.1 200 Purged\./

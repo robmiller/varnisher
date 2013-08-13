@@ -8,5 +8,12 @@ require_relative 'varnisher/pagepurger'
 # * {Varnisher::DomainPurger}
 # * {Varnisher::PagePurger}
 module Varnisher 
+  def self.options
+    @options
+  end
+
+  def self.options=(options)
+    @options = options
+  end
 end
 
