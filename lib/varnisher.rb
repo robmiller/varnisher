@@ -3,6 +3,8 @@ require_relative 'varnisher/purger'
 require_relative 'varnisher/domainpurger'
 require_relative 'varnisher/pagepurger'
 
+require 'logger'
+
 # This module is a namespace for our main functionality:
 #
 # * {Varnisher::Spider}
@@ -18,8 +20,13 @@ module Varnisher
     'num-pages' => -1,
     'threads' => 16,
     'ignore-hashes' => true,
-    'ignore-query-strings' => false
+    'ignore-query-strings' => false,
+    'log' => nil
   }
+
+  @log = Logger.new(STDOUT)
+  # By default, only display the log message, nothing else.
+  @log.formatter = proc { |_, _, _, msg| "#{msg}\n" }
 
   def self.options
     @options
@@ -35,6 +42,12 @@ module Varnisher
       rescue
       end
     end
+
+    @log.level = options['verbose'] ? Logger::DEBUG : Logger::INFO
+  end
+
+  def self.log
+    @log
   end
 end
 
