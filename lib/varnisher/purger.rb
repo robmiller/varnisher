@@ -16,33 +16,47 @@ module Varnisher
   #   from the server; false otherwise
   def self.purge(target, type = :page)
     if type == :page
+      purger = Purger.from_url(target)
+    else
+      purger = Purger.new('DOMAINPURGE', '/', target)
+    end
+
+    purger.send if purger
+  end
+
+  # Responsible for sending purge requests to the Varnish server.
+  class Purger
+    # Prepares a new purge request.
+    #
+    # @param method ["PURGE", "DOMAINPURGE"] The HTTP verb to send to
+    #   the server
+    # @param path [String] The path to purge; for a domain purge,
+    #   use "/"
+    # @param host [String] The hostname of the URL being purged
+    def initialize(method, path, host)
+      @method = method
+      @path = path
+      @host = host
+    end
+
+    def self.from_url(url)
       begin
         uri = URI.parse(URI.encode(url.to_s.strip))
       rescue
-        return false
+        return
       end
 
-      method = 'PURGE'
-      path = uri.path
-      host = uri.host
-    else
-      type = :domain
-
-      method = 'DOMAINPURGE'
-      path = '/'
-      host = target
+      new('PURGE', uri.path, uri.host)
     end
 
-    s = TCPSocket.open(
-      Varnisher.options['hostname'],
-      Varnisher.options['port']
-    )
-    s.print("#{method} #{path} HTTP/1.1\r\nHost: #{host}\r\n\r\n")
+    def send
+      hostname = Varnisher.options['hostname']
+      port = Varnisher.options['port']
 
-    purged = !!s.read.match(/HTTP\/1\.1 200 Purged\./)
-
-    s.close
-
-    purged
+      TCPSocket.open(hostname, port) do |s|
+        s.print("#{@method} #{@path} HTTP/1.1\r\nHost: #{@host}\r\n\r\n")
+        !!s.read.match(/HTTP\/1\.1 200 Purged\./)
+      end
+    end
   end
 end
