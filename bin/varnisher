@@ -55,7 +55,8 @@ Main {
 
       # If target is a valid URL, then assume we're purging a page and its contents.
       if target =~ %r(^[a-z]+://)
-        Varnisher::PagePurger.new target
+        purger = Varnisher::PagePurger.new target
+        purger.purge
       # If target is a hostname, assume we want to purge an entire domain.
       elsif target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
         Varnisher::DomainPurger.new target
