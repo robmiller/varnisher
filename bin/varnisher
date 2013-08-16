@@ -62,7 +62,8 @@ Main {
         Varnisher::DomainPurger.new target
 
         if params['reindex'].given?
-          Varnisher::Spider.new "http://#{target}/"
+          spider = Varnisher::Spider.new "http://#{target}/"
+          spider.run
         end
       end
     end
@@ -94,7 +95,8 @@ Main {
     def run
       target = params['target'].value
 
-      Varnisher::Spider.new target
+      spider = Varnisher::Spider.new target
+      spider.run
     end
   end
 
