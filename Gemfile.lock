@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    varnisher (1.0.beta.2)
+    varnisher (1.0.beta.3)
       main (~> 5.2.0)
       nokogiri (~> 1.6.0)
       parallel (~> 0.7.1)
