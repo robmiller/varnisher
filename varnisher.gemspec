@@ -15,14 +15,11 @@ Gem::Specification.new do |s|
 
   s.license = "MIT"
 
-  s.files = Dir.glob("{bin,lib}/**/*") + %w(LICENSE README.md)
+  s.files = Dir.glob("{bin,lib}/**/*") + %w(LICENSE README.md Gemfile)
   s.executables = ['varnisher']
   s.require_path = 'lib'
 
   s.add_runtime_dependency 'main', '~> 5.2.0'
   s.add_runtime_dependency 'nokogiri', '~> 1.6.0'
   s.add_runtime_dependency 'parallel', '~> 0.7.1'
-
-  s.add_development_dependency 'letters', '~> 0.4.1'
-  s.add_development_dependency 'yard', '~> 0.8.7'
 end
