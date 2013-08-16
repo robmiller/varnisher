@@ -3,6 +3,8 @@ require_relative 'varnisher/purger'
 require_relative 'varnisher/domainpurger'
 require_relative 'varnisher/pagepurger'
 
+require 'logger'
+
 # This module is a namespace for our main functionality:
 #
 # * {Varnisher::Spider}
@@ -13,12 +15,14 @@ module Varnisher
   # command-line arguments or by settings in a user's ~/.varnishrc file.
   @options = {
     'verbose' => false,
+    'quiet' => false,
     'hostname' => nil,
     'port' => 80,
     'num-pages' => -1,
     'threads' => 16,
     'ignore-hashes' => true,
-    'ignore-query-strings' => false
+    'ignore-query-strings' => false,
+    'output-file' => nil
   }
 
   def self.options
@@ -35,6 +39,30 @@ module Varnisher
       rescue
       end
     end
+
+    start_logging
+  end
+
+  # Sets up our Logger object, which will write output either to STDOUT
+  # (the default) or to the specified file.
+  def self.start_logging
+    output = @options['output-file'] || STDOUT
+    @log = Logger.new(output)
+
+    # By default, only display the log message, nothing else.
+    @log.formatter = proc { |_, _, _, msg| "#{msg}\n" }
+
+    @log.level = if @options['verbose']
+                   Logger::DEBUG
+                 elsif @options['quiet']
+                   Logger::FATAL
+                 else
+                   Logger::INFO
+                 end
+  end
+
+  def self.log
+    @log
   end
 end
 

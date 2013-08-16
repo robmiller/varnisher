@@ -21,49 +21,39 @@ module Varnisher
 
       # First, purge the URL itself; that means we'll get up-to-date
       # references within that page.
-      puts "Purging #{@url}...\n\n"
+      Varnisher.log.info "Purging #{@url}...\n\n"
       purge(@url)
 
       # Then, do a fresh GET of the page and queue any resources we find on it.
-      puts "Looking for external resources on #{@url}..."
-
-      if Varnisher.options["verbose"]
-        puts "\n\n"
-      end
+      Varnisher.log.debug "\n\n"
+      Varnisher.log.info "Looking for external resources on #{@url}..."
 
       fetch_page(@url)
 
-      if Varnisher.options["verbose"]
-        puts "\n"
-      end
-
-      puts "#{@urls.length} total resources found.\n\n"
+      Varnisher.log.debug "\n"
+      Varnisher.log.info "#{@urls.length} total resources found.\n\n"
 
       if @urls.length == 0
-        puts "No resources found. Abort!"
+        Varnisher.log.info "No resources found. Abort!"
         return
       end
 
       # Let's figure out which of these resources we can actually purge
       # — whether they're on our server, etc.
-      puts "Tidying resources...\n"
+      Varnisher.log.info "Tidying resources...\n"
       tidy_resources
-      puts "#{@urls.length} purgeable resources found.\n\n"
+      Varnisher.log.info "#{@urls.length} purgeable resources found.\n\n"
 
       # Now, purge all of the resources we just queued.
-      puts "Purging resources..."
+      Varnisher.log.info "Purging resources..."
 
-      if Varnisher.options["verbose"]
-        puts "\n\n"
-      end
+      Varnisher.log.debug "\n\n"
 
       purge_queue
 
-      if Varnisher.options["verbose"]
-        puts "\n"
-      end
+      Varnisher.log.debug "\n"
 
-      puts "Nothing more to do!\n\n"
+      Varnisher.log.info "Nothing more to do!\n\n"
     end
 
     # Sends a PURGE request to the Varnish server, asking it to purge
@@ -88,9 +78,9 @@ module Varnisher
     def purge(url)
       purged = Varnisher::purge(url)
       if purged
-        puts "Purged #{url}"
+        Varnisher.log.debug "Purged #{url}"
       else
-        puts "Failed to purge #{url}"
+        Varnisher.log.info "Failed to purge #{url}"
       end
     end
 
@@ -104,7 +94,7 @@ module Varnisher
       begin
         uri = URI.parse(URI.encode(url.to_s.strip))
       rescue
-        puts "Couldn't parse URL for resource-searching: #{url}"
+        Varnisher.log.info "Couldn't parse URL for resource-searching: #{url}"
         return
       end
 
@@ -117,14 +107,12 @@ module Varnisher
       begin
         doc = Nokogiri::HTML(Net::HTTP.get_response(uri).body)
       rescue
-        puts "Hmm, I couldn't seem to fetch that URL. Sure it's right?\n"
+        Varnisher.log.info "Hmm, I couldn't seem to fetch that URL. Sure it's right?\n"
         return
       end
 
       find_resources(doc) do |resource|
-        if Varnisher.options["verbose"]
-            puts "Found #{resource}"
-          end
+        Varnisher.log.debug "Found #{resource}"
         queue_resource(resource)
       end
     end
@@ -227,9 +215,7 @@ module Varnisher
     # @api private
     def purge_queue
       Parallel.map(@urls) do |url|
-        if Varnisher.options["verbose"]
-          puts "Purging #{url}..."
-        end
+        Varnisher.log.debug "Purging #{url}..."
 
         purge(url)
       end

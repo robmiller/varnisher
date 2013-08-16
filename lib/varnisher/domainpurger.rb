@@ -18,9 +18,9 @@ module Varnisher
     def initialize(domain)
       purged = Varnisher::purge(domain, :domain)
       if purged
-        puts "Purged #{domain}"
+        Varnisher.log.info "Purged #{domain}"
       else
-        puts "Failed to purge #{domain}"
+        Varnisher.log.info "Failed to purge #{domain}"
       end
     end
   end
