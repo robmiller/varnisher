@@ -34,6 +34,11 @@ Main {
     description "The port Varnish is listening on."
   }
 
+  option('o', 'output-file') {
+    argument :required
+    description "A file to output log information to. If not given, output will be printed to STDOUT"
+  }
+
   def before_run
     load_config
   end

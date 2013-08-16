@@ -22,12 +22,8 @@ module Varnisher
     'threads' => 16,
     'ignore-hashes' => true,
     'ignore-query-strings' => false,
-    'log' => nil
+    'output-file' => nil
   }
-
-  @log = Logger.new(STDOUT)
-  # By default, only display the log message, nothing else.
-  @log.formatter = proc { |_, _, _, msg| "#{msg}\n" }
 
   def self.options
     @options
@@ -44,9 +40,21 @@ module Varnisher
       end
     end
 
-    @log.level = if options['verbose']
+    start_logging
+  end
+
+  # Sets up our Logger object, which will write output either to STDOUT
+  # (the default) or to the specified file.
+  def self.start_logging
+    output = @options['output-file'] || STDOUT
+    @log = Logger.new(output)
+
+    # By default, only display the log message, nothing else.
+    @log.formatter = proc { |_, _, _, msg| "#{msg}\n" }
+
+    @log.level = if @options['verbose']
                    Logger::DEBUG
-                 elsif options['quiet']
+                 elsif @options['quiet']
                    Logger::FATAL
                  else
                    Logger::INFO
