@@ -33,10 +33,13 @@ module Varnisher
       host = target
     end
 
-    s = TCPSocket.open(Varnisher.options['hostname'], Varnisher.options['port'])
+    s = TCPSocket.open(
+      Varnisher.options['hostname'],
+      Varnisher.options['port']
+    )
     s.print("#{method} #{path} HTTP/1.1\r\nHost: #{host}\r\n\r\n")
 
-    purged = ( s.read =~ /HTTP\/1\.1 200 Purged\./ )
+    purged = !!s.read.match(/HTTP\/1\.1 200 Purged\./)
 
     s.close
 

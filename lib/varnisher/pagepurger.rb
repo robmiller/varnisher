@@ -39,7 +39,7 @@ module Varnisher
       end
 
       # Let's figure out which of these resources we can actually purge
-      # — whether they're on our server, etc.
+      # - whether they're on our server, etc.
       Varnisher.log.info "Tidying resources...\n"
       tidy_resources
       Varnisher.log.info "#{@urls.length} purgeable resources found.\n\n"
@@ -175,22 +175,23 @@ module Varnisher
     def tidy_resources
       valid_urls = []
 
-      @urls.each { |url|
+      @urls.each do |url|
 
         # If we're dealing with a host-relative URL (e.g. <img
         # src="/foo/bar.jpg">), absolutify it.
-        if url.to_s =~ /^\//
+        url.match(/\//) do
           url = @uri.scheme + '://' + @uri.host + url.to_s
         end
 
         # If we're dealing with a path-relative URL, make it relative to
         # the current directory.
-        unless url.to_s =~ /[a-z]+:\/\//
+        unless url.to_s =~ %r([a-z]+://)
 
           # Take everything up to the final / in the path to be the
           # current directory.
-          /^(.*)\//.match(@uri.path)
-          url = @uri.scheme + '://' + @uri.host + $1 + '/' + url.to_s
+          @uri.path.match(/^(.*)\//) do |m|
+            url = @uri.scheme + '://' + @uri.host + m[1] + '/' + url.to_s
+          end
         end
 
         begin
@@ -204,7 +205,7 @@ module Varnisher
         next if uri.host != @uri.host
 
         valid_urls << url
-      }
+      end
 
       @urls = valid_urls.dup
     end

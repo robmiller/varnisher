@@ -30,7 +30,7 @@ module Varnisher
     #
     # @param url [String, URI] The URL to begin the spidering from. This
     #   also restricts the spider to fetching pages only on that
-    #   (sub)domain — so, for example, if you specify
+    #   (sub)domain - so, for example, if you specify
     #   http://example.com/foo as your starting page, only URLs that begin
     #   http://example.com will be followed.
     def initialize(url)
@@ -103,7 +103,9 @@ module Varnisher
 
       begin
         req = Net::HTTP::Get.new(uri.path, headers)
-        response = Net::HTTP.start(uri.host, uri.port) { |http| http.request(req) }
+        response = Net::HTTP.start(uri.host, uri.port) do |http|
+          http.request(req)
+        end
 
         case response
         when Net::HTTPRedirection
@@ -157,7 +159,7 @@ module Varnisher
 
       # Let's also look for commented-out URIs
       doc.xpath('//comment()').each do |e|
-        e.to_html.scan(/https?:\/\/[^\s\"]*/) { |url| hrefs << url; }
+        e.to_html.scan(%r(http://[^\s\"]*)) { |h| hrefs << h; }
       end
 
       hrefs.each do |href|
@@ -172,16 +174,15 @@ module Varnisher
 
           # If we're dealing with a path-relative URL, make it relative
           # to the current directory.
-          unless href.to_s =~ /[a-z]+:\/\//
+          unless href.to_s =~ %r([a-z]+://)
 
             # Take everything up to the final / in the path to be the
             # current directory.
+            path = ''
             if uri.path =~ /\//
-              /^(.*)\//.match(uri.path)
-              path = $1
-            # If we're on the homepage, then we don't need a path.
-            else
-              path = ''
+              uri.path.match(/^(.*)\//) do |m|
+                path = m[1]
+              end
             end
 
             href = uri.scheme + '://' + uri.host + path + '/' + href.to_s
@@ -191,19 +192,15 @@ module Varnisher
           # its original format.
 
           # Strip hash links
-          if ( Varnisher.options['ignore-hashes'] )
-            href.gsub!(/(#.*?)$/, '')
-          end
+          href.gsub!(/(#.*?)$/, '') if Varnisher.options['ignore-hashes']
 
           # Strip query strings
-          if ( Varnisher.options['ignore-query-strings'] )
-            href.gsub!(/(\?.*?)$/, '')
-          end
+          href.gsub!(/(\?.*?)$/, '') if Varnisher.options['ignore-query-strings']
 
           begin
             href_uri = URI.parse(href)
           rescue
-            # No harm in this — if we can't parse it as a URI, it
+            # No harm in this - if we can't parse it as a URI, it
             # probably isn't one (`javascript:` links, etc.) and we can
             # safely ignore it.
             next
@@ -229,18 +226,21 @@ module Varnisher
       threads = Varnisher.options['threads']
       num_pages = Varnisher.options['num-pages']
 
-      Parallel.in_threads(threads) { |thread_number|
-          # We've crawled too many pages
-          next if @pages_hit > num_pages && num_pages >= 0
+      Parallel.in_threads(threads) do |thread_number|
+        # We've crawled too many pages
+        next if @pages_hit > num_pages && num_pages >= 0
 
-          while @to_visit.length > 0 
-            begin
-              url = @to_visit.pop
-            end while ( @visited.include? url )
+        url = ''
 
-            crawl_page(url)
+        while @to_visit.length > 0
+          loop do
+            url = @to_visit.pop
+            break unless @visited.include?(url)
           end
-        }
+
+          crawl_page(url)
+        end
+      end
     end
   end
 end

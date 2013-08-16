@@ -54,12 +54,10 @@ Main {
       target = params['target'].value
 
       # If target is a valid URL, then assume we're purging a page and its contents.
-      if target =~ /^[a-z]+:\/\//
+      if target =~ %r(^[a-z]+://)
         Varnisher::PagePurger.new target
-      end
-
       # If target is a hostname, assume we want to purge an entire domain.
-      if target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
+      elsif target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
         Varnisher::DomainPurger.new target
 
         if params['reindex'].given?
@@ -114,7 +112,7 @@ Main {
     # The highest priority is given to command line arguments, so that
     # the user can override things that are in their RC file if they
     # choose to.
-    options.merge!(params.to_options.reject { |k,v| v.nil? })
+    options.merge!(params.to_options.reject { |k, v| v.nil? })
 
     Varnisher.options = options
   end
