@@ -45,10 +45,10 @@ module Varnisher
       @visited = []
       @to_visit = []
 
-      puts "Beginning spider of #{url}"
+      Varnisher.log.info "Beginning spider of #{url}"
       crawl_page(url)
       spider
-      puts "Done; #{@pages_hit} pages hit."
+      Varnisher.log.info "Done; #{@pages_hit} pages hit."
     end
 
     # Adds a link to the queue of pages to be visited.
@@ -117,9 +117,7 @@ module Varnisher
 
       @pages_hit += 1
 
-      if Varnisher.options["verbose"]
-        puts "Fetched #{url}..."
-      end
+      Varnisher.log.debug "Fetched #{url}..."
 
       find_links(doc, url) do |link|
         next if @visited.include? link
