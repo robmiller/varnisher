@@ -16,7 +16,7 @@ module Varnisher
     #
     # @param domain [String] The hostname to purge
     def initialize(domain)
-      purged = Varnisher::purge(domain, :domain)
+      purged = Varnisher.purge(domain, :domain)
       if purged
         Varnisher.log.info "Purged #{domain}"
       else

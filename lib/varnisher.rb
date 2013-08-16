@@ -10,7 +10,7 @@ require 'logger'
 # * {Varnisher::Spider}
 # * {Varnisher::DomainPurger}
 # * {Varnisher::PagePurger}
-module Varnisher 
+module Varnisher
   # Our default options are set here; they can be overriden either by
   # command-line arguments or by settings in a user's ~/.varnishrc file.
   @options = {
@@ -32,12 +32,9 @@ module Varnisher
   def self.options=(options)
     @options = options
 
-    if options['hostname'].nil? and options['target']
-      begin
-        uri = URI.parse(options['target'])
-        options['hostname'] = uri.host
-      rescue
-      end
+    if options['hostname'].nil? && options['target']
+      uri = URI.parse(options['target'])
+      options['hostname'] = uri.host
     end
 
     start_logging

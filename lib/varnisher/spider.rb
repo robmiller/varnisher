@@ -30,25 +30,18 @@ module Varnisher
     #
     # @param url [String, URI] The URL to begin the spidering from. This
     #   also restricts the spider to fetching pages only on that
-    #   (sub)domain — so, for example, if you specify
+    #   (sub)domain - so, for example, if you specify
     #   http://example.com/foo as your starting page, only URLs that begin
     #   http://example.com will be followed.
     def initialize(url)
-      if url =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
-        url = 'http://' + url
-      end
+      # If we've been given only a hostname, assume that we want to
+      # start spidering from the homepage
+      url = 'http://' + url unless url =~ %r(^[a-z]+://)
 
       @uri = URI.parse(url)
 
-      @pages_hit = 0
-
       @visited = []
       @to_visit = []
-
-      Varnisher.log.info "Beginning spider of #{url}"
-      crawl_page(url)
-      spider
-      Varnisher.log.info "Done; #{@pages_hit} pages hit."
     end
 
     # Adds a link to the queue of pages to be visited.
@@ -72,54 +65,21 @@ module Varnisher
     # Each link that it finds will be added to the queue of further
     # pages to visit.
     #
-    # If the URL given sends an HTTP redirect, that redirect will be
-    # followed; this is done by recursively calling `crawl_page` with
-    # a decremented `redirect_limit`; if `redirect_limit` reaches 0, the
-    # request will be abandoned.
-    #
     # @param url [String, URI] The URL of the page to fetch
-    # @param redirect_limit [Fixnum] The number of HTTP redirects to
-    #   follow before abandoning this URL
     #
     # @api private
-    def crawl_page(url, redirect_limit = 10)
+    def crawl_page(uri)
       # Don't crawl a page twice
-      return if @visited.include? url
+      return if @visited.include? uri.to_s
 
       # Let's not hit this again
-      @visited << url
+      @visited << uri.to_s
 
-      begin
-        uri = URI.parse(URI.encode(url.to_s.strip))
-      rescue
-        return
-      end
+      doc = Nokogiri::HTML(Net::HTTP.get_response(uri).body)
 
-      headers = {
-        "User-Agent"     => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31",
-        "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-        "Accept"         => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-      }
+      Varnisher.log.debug "Fetched #{uri}..."
 
-      begin
-        req = Net::HTTP::Get.new(uri.path, headers)
-        response = Net::HTTP.start(uri.host, uri.port) { |http| http.request(req) }
-
-        case response
-        when Net::HTTPRedirection
-          return crawl_page(response['location'], redirect_limit - 1)
-        when Net::HTTPSuccess
-          doc = Nokogiri::HTML(response.body)
-        end
-      rescue
-        return
-      end
-
-      @pages_hit += 1
-
-      Varnisher.log.debug "Fetched #{url}..."
-
-      find_links(doc, url) do |link|
+      find_links(doc, uri).each do |link|
         next if @visited.include? link
         next if @to_visit.include? link
 
@@ -138,82 +98,112 @@ module Varnisher
     # @param url [String, URI] The URL that the document came from;
     #   this is used to resolve relative URIs
     #
+    # @return [Array] An array of URIs
+    #
     # @api private
-    def find_links(doc, url)
-      return unless doc.respond_to? 'xpath'
-
-      begin
-        uri = URI.parse(URI.encode(url.to_s.strip))
-      rescue
-        return
-      end
-
+    def find_links(doc, uri)
       hrefs = []
 
-      # Looks like a valid document! Let's parse it for links
-      doc.xpath("//a[@href]").each do |e|
-        hrefs << e["href"]
+      hrefs  = get_anchors(doc)
+      hrefs += get_commented_urls(doc)
+
+      hrefs = valid_urls(hrefs, uri)
+      hrefs = remove_hashes(hrefs)
+      hrefs = remove_query_strings(hrefs)
+
+      hrefs
+    end
+
+    # Given an HTML document, will return all the URLs that exist as
+    # href attributes of anchor tags.
+    #
+    # @return [Array] An array of strings
+    def get_anchors(doc)
+      doc.xpath('//a[@href]').map { |e| e['href'] }
+    end
+
+    # Given an HTML document, will return all the URLs that exist in
+    # HTML comments, e.g.:
+    #
+    #     <!-- http://example.com/foo/bar -->
+    def get_commented_urls(doc)
+      doc.xpath('//comment()').flat_map { |e| URI.extract(e.to_html, 'http') }
+    end
+
+    # Given a set of URLs, will return only the ones that are valid for
+    # spidering.
+    #
+    # That means URLs that have the same hostname as the hostname we
+    # started from, and that are on the HTTP scheme rather than HTTPS
+    # (since Varnish doesn't support HTTPS).
+    #
+    # Additionally, some normalisation will be performed, so that the
+    # URLs are absolute (using the page that they were fetched from as
+    # the base, just like a browser would).
+    #
+    # @return [Array] An array of URIs
+    def valid_urls(hrefs, uri)
+      hrefs.map { |u| URI.join(uri, URI.escape(u)) }
+        .select { |u| u.scheme == 'http' && u.host == @uri.host }
+    end
+
+    # Given a set of URLs, will normalise them according to their URL
+    # minus the hash; that is, normalise them so that:
+    #
+    # foo#bar
+    #
+    # and:
+    #
+    # foo#baz
+    #
+    # Are considered the same.
+    #
+    # @return [Array] An array of URIs
+    def remove_hashes(hrefs)
+      return hrefs unless Varnisher.options['ignore-hashes']
+
+      hrefs = hrefs.group_by do |h|
+        URI.parse(h.scheme + '://' + h.host + h.path.to_s + h.query.to_s)
       end
 
-      # Let's also look for commented-out URIs
-      doc.xpath("//comment()").each do |e|
-        e.to_html.scan(/https?:\/\/[^\s\"]*/) { |url| hrefs << url; }
+      hrefs.keys
+    end
+
+    # Given a set of URLs, will normalise them according to their URL
+    # minus the query string; that is, normalise them so that:
+    #
+    # foo?foo=bar
+    #
+    # and:
+    #
+    # foo?foo=baz
+    #
+    # Are considered the same.
+    #
+    # @return [Array] An array of URIs
+    def remove_query_strings(hrefs)
+      return hrefs unless Varnisher.options['ignore-query-strings']
+
+      hrefs = hrefs.group_by do |h|
+        URI.parse(h.scheme + '://' + h.host + h.path.to_s)
       end
 
-      hrefs.each do |href|
-          # Skip mailto links
-          next if href =~ /^mailto:/
+      hrefs.keys
+    end
 
-          # If we're dealing with a host-relative URL (e.g. <img
-          # src="/foo/bar.jpg">), absolutify it.
-          if href.to_s =~ /^\//
-            href = uri.scheme + "://" + uri.host + href.to_s
-          end
+    # Pops a URL from the queue of yet-to-be-visited URLs, ensuring that
+    # it's not one that we've visited before.
+    #
+    # @return [URI] A URI object for an unvisited page
+    def pop_url
+      url = ''
 
-          # If we're dealing with a path-relative URL, make it relative
-          # to the current directory.
-          unless href.to_s =~ /[a-z]+:\/\//
-
-            # Take everything up to the final / in the path to be the
-            # current directory.
-            if uri.path =~ /\//
-              /^(.*)\//.match(uri.path)
-              path = $1
-            # If we're on the homepage, then we don't need a path.
-            else
-              path = ""
-            end
-
-            href = uri.scheme + "://" + uri.host + path + "/" + href.to_s
-          end
-
-          # At this point, we should have an absolute URL regardless of
-          # its original format.
-
-          # Strip hash links
-          if ( Varnisher.options["ignore-hashes"] )
-            href.gsub!(/(#.*?)$/, '')
-          end
-
-          # Strip query strings
-          if ( Varnisher.options["ignore-query-strings"] )
-            href.gsub!(/(\?.*?)$/, '')
-          end
-
-          begin
-            href_uri = URI.parse(href)
-          rescue
-            # No harm in this — if we can't parse it as a URI, it
-            # probably isn't one (`javascript:` links, etc.) and we can
-            # safely ignore it.
-            next
-          end
-
-          next if href_uri.host != uri.host
-          next unless href_uri.scheme =~ /^https?$/
-
-          yield href
+      loop do
+        url = @to_visit.pop
+        break unless @visited.include?(url)
       end
+
+      url
     end
 
     # Kicks off the spidering process.
@@ -225,22 +215,21 @@ module Varnisher
     # limit has been reached and, if it has, ending the spidering.
     #
     # @api private
-    def spider
-      threads = Varnisher.options["threads"]
-      num_pages = Varnisher.options["num-pages"]
+    def run
+      Varnisher.log.info "Beginning spider of #{@uri}"
 
-      Parallel.in_threads(threads) { |thread_number|
-          # We've crawled too many pages
-          next if @pages_hit > num_pages && num_pages >= 0
+      crawl_page(@uri)
 
-          while @to_visit.length > 0 do
-            begin
-              url = @to_visit.pop
-            end while ( @visited.include? url )
+      threads = Varnisher.options['threads']
+      num_pages = Varnisher.options['num-pages']
 
-            crawl_page(url)
-          end
-        }
+      Parallel.in_threads(threads) do |thread_number|
+        next if @visited.length > num_pages && num_pages >= 0
+
+        crawl_page(pop_url) while @to_visit.length > 0
+      end
+
+      Varnisher.log.info "Done; #{@visited.length} pages hit."
     end
   end
 end
