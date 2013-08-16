@@ -9,9 +9,9 @@ require 'yaml'
 require 'varnisher'
 
 Main {
-  examples "varnisher purge http://example.com", "varnisher spider example.com", "varnisher purge --reindex example.com"
+  examples 'varnisher purge http://example.com', 'varnisher spider example.com', 'varnisher purge --reindex example.com'
 
-  description "Varnisher is a set of tools for working with the Varnish HTTP cache."
+  description 'Varnisher is a set of tools for working with the Varnish HTTP cache.'
 
   argument 'target'
 
@@ -20,34 +20,34 @@ Main {
   }
 
   option('q', 'quiet') {
-    description "If given, Varnisher will be silent apart from errors."
+    description 'If given, Varnisher will be silent apart from errors.'
   }
 
   option('H', 'hostname') {
     argument :required
-    description "The hostname/IP address of your Varnish server."
+    description 'The hostname/IP address of your Varnish server.'
   }
 
   option('p', 'port') {
     argument :required
     cast :int
-    description "The port Varnish is listening on."
+    description 'The port Varnish is listening on.'
   }
 
   option('o', 'output-file') {
     argument :required
-    description "A file to output log information to. If not given, output will be printed to STDOUT"
+    description 'A file to output log information to. If not given, output will be printed to STDOUT'
   }
 
   def before_run
     load_config
   end
 
-  mode "purge" do
-    argument('target') { description "The URL or hostname to purge" }
+  mode 'purge' do
+    argument('target') { description 'The URL or hostname to purge' }
 
     option('reindex') {
-      description "If you specify a hostname to purge, this option will respider that hostname after the purging is complete. This will keep your cache as warm as possible."
+      description 'If you specify a hostname to purge, this option will respider that hostname after the purging is complete. This will keep your cache as warm as possible.'
     }
 
     def run
@@ -69,27 +69,27 @@ Main {
     end
   end
 
-  mode "spider" do
-    argument('target') { description "The URL to begin spidering from." }
+  mode 'spider' do
+    argument('target') { description 'The URL to begin spidering from.' }
 
     option('n', 'num-pages') {
       argument :required
       cast :int
-      description "Maximum number of pages to crawl. Setting this to -1 (the default) will impose no limit."
+      description 'Maximum number of pages to crawl. Setting this to -1 (the default) will impose no limit.'
     }
 
     option('t', 'threads') {
       argument :required
       cast :int
-      description "Spidering is done in parallel; this variable controls how many threads will be used."
+      description 'Spidering is done in parallel; this variable controls how many threads will be used.'
     }
 
     option('#', 'ignore-hashes') {
-      description "When given, /foo#foo and /foo#bar will be treated as separate URLs; the default is to treat them as the same resource."
+      description 'When given, /foo#foo and /foo#bar will be treated as separate URLs; the default is to treat them as the same resource.'
     }
 
     option('q', 'ignore-query-strings') {
-      description "When given, /foo?foo=bar and /foo?foo=baz will be treated as the same resource."
+      description 'When given, /foo?foo=bar and /foo?foo=baz will be treated as the same resource.'
     }
 
     def run
@@ -105,9 +105,9 @@ Main {
 
     # Check the user's RC file -- if it exists -- to see if they've
     # specified any defaults of their own.
-    rcfile = File.expand_path("~/.varnishrc")
+    rcfile = File.expand_path('~/.varnishrc')
     if FileTest.readable? rcfile
-      rc = YAML::load(File.open(rcfile))
+      rc = YAML.load(File.open(rcfile))
       options.merge!(rc)
     end
 

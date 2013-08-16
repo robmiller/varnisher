@@ -96,9 +96,9 @@ module Varnisher
       end
 
       headers = {
-        "User-Agent"     => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31",
-        "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-        "Accept"         => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        'User-Agent'     => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.43 Safari/537.31',
+        'Accept-Charset' => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+        'Accept'         => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
       }
 
       begin
@@ -151,12 +151,12 @@ module Varnisher
       hrefs = []
 
       # Looks like a valid document! Let's parse it for links
-      doc.xpath("//a[@href]").each do |e|
-        hrefs << e["href"]
+      doc.xpath('//a[@href]').each do |e|
+        hrefs << e['href']
       end
 
       # Let's also look for commented-out URIs
-      doc.xpath("//comment()").each do |e|
+      doc.xpath('//comment()').each do |e|
         e.to_html.scan(/https?:\/\/[^\s\"]*/) { |url| hrefs << url; }
       end
 
@@ -167,7 +167,7 @@ module Varnisher
           # If we're dealing with a host-relative URL (e.g. <img
           # src="/foo/bar.jpg">), absolutify it.
           if href.to_s =~ /^\//
-            href = uri.scheme + "://" + uri.host + href.to_s
+            href = uri.scheme + '://' + uri.host + href.to_s
           end
 
           # If we're dealing with a path-relative URL, make it relative
@@ -181,22 +181,22 @@ module Varnisher
               path = $1
             # If we're on the homepage, then we don't need a path.
             else
-              path = ""
+              path = ''
             end
 
-            href = uri.scheme + "://" + uri.host + path + "/" + href.to_s
+            href = uri.scheme + '://' + uri.host + path + '/' + href.to_s
           end
 
           # At this point, we should have an absolute URL regardless of
           # its original format.
 
           # Strip hash links
-          if ( Varnisher.options["ignore-hashes"] )
+          if ( Varnisher.options['ignore-hashes'] )
             href.gsub!(/(#.*?)$/, '')
           end
 
           # Strip query strings
-          if ( Varnisher.options["ignore-query-strings"] )
+          if ( Varnisher.options['ignore-query-strings'] )
             href.gsub!(/(\?.*?)$/, '')
           end
 
@@ -226,14 +226,14 @@ module Varnisher
     #
     # @api private
     def spider
-      threads = Varnisher.options["threads"]
-      num_pages = Varnisher.options["num-pages"]
+      threads = Varnisher.options['threads']
+      num_pages = Varnisher.options['num-pages']
 
       Parallel.in_threads(threads) { |thread_number|
           # We've crawled too many pages
           next if @pages_hit > num_pages && num_pages >= 0
 
-          while @to_visit.length > 0 do
+          while @to_visit.length > 0 
             begin
               url = @to_visit.pop
             end while ( @visited.include? url )

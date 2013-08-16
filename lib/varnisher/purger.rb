@@ -22,14 +22,14 @@ module Varnisher
         return false
       end
 
-      method = "PURGE"
+      method = 'PURGE'
       path = uri.path
       host = uri.host
     else
       type = :domain
 
-      method = "DOMAINPURGE"
-      path = "/"
+      method = 'DOMAINPURGE'
+      path = '/'
       host = target
     end
 

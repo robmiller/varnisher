@@ -34,7 +34,7 @@ module Varnisher
       Varnisher.log.info "#{@urls.length} total resources found.\n\n"
 
       if @urls.length == 0
-        Varnisher.log.info "No resources found. Abort!"
+        Varnisher.log.info 'No resources found. Abort!'
         return
       end
 
@@ -45,7 +45,7 @@ module Varnisher
       Varnisher.log.info "#{@urls.length} purgeable resources found.\n\n"
 
       # Now, purge all of the resources we just queued.
-      Varnisher.log.info "Purging resources..."
+      Varnisher.log.info 'Purging resources...'
 
       Varnisher.log.debug "\n\n"
 
@@ -76,7 +76,7 @@ module Varnisher
     #
     # @api private
     def purge(url)
-      purged = Varnisher::purge(url)
+      purged = Varnisher.purge(url)
       if purged
         Varnisher.log.debug "Purged #{url}"
       else
@@ -99,9 +99,9 @@ module Varnisher
       end
 
       headers = {
-        "User-Agent"     => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.106 Safari/535.2",
-        "Accept-Charset" => "utf-8",
-        "Accept"         => "text/html"
+        'User-Agent'     => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.106 Safari/535.2',
+        'Accept-Charset' => 'utf-8',
+        'Accept'         => 'text/html'
       }
 
       begin
@@ -180,7 +180,7 @@ module Varnisher
         # If we're dealing with a host-relative URL (e.g. <img
         # src="/foo/bar.jpg">), absolutify it.
         if url.to_s =~ /^\//
-          url = @uri.scheme + "://" + @uri.host + url.to_s
+          url = @uri.scheme + '://' + @uri.host + url.to_s
         end
 
         # If we're dealing with a path-relative URL, make it relative to
@@ -190,7 +190,7 @@ module Varnisher
           # Take everything up to the final / in the path to be the
           # current directory.
           /^(.*)\//.match(@uri.path)
-          url = @uri.scheme + "://" + @uri.host + $1 + "/" + url.to_s
+          url = @uri.scheme + '://' + @uri.host + $1 + '/' + url.to_s
         end
 
         begin
@@ -200,7 +200,7 @@ module Varnisher
         end
 
         # Skip URLs that aren't HTTP, or that are on different domains.
-        next if uri.scheme != "http"
+        next if uri.scheme != 'http'
         next if uri.host != @uri.host
 
         valid_urls << url
