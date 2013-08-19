@@ -22,4 +22,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'main', '~> 5.2.0'
   s.add_runtime_dependency 'nokogiri', '~> 1.6.0'
   s.add_runtime_dependency 'parallel', '~> 0.7.1'
+
+  s.add_runtime_dependency 'rake', '~> 10.1.0'
+  s.add_runtime_dependency 'minitest', '~> 5.0.6'
+  s.add_runtime_dependency 'webmock', '~> 1.13.0'
+  s.add_runtime_dependency 'letters', '~> 0.4.1'
 end
