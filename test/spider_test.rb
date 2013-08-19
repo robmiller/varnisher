@@ -34,6 +34,14 @@ describe Varnisher::Spider do
     refute @spider.to_visit.include?(URI.parse('http://www.example.net/foo'))
   end
 
+  it "reads URLs from comments" do
+    assert @spider.to_visit.include?(URI.parse('http://www.example.com/commented'))
+  end
+
+  it "ignores external URLs in comments" do
+    refute @spider.to_visit.include?(URI.parse('http://www.example.net/commented'))
+  end
+
   it "crawls all queued pages" do
     stub_request(:any, /www.example.com.*/)
       .to_return(:status => 200)
