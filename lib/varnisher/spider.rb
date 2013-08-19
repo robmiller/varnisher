@@ -21,6 +21,7 @@ module Varnisher
   #
   #
   class Spider
+    attr_reader :to_visit, :visited
 
     # Starts a new spider instance.
     #
