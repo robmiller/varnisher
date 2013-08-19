@@ -32,7 +32,7 @@ module Varnisher
   end
 
   def self.options=(options)
-    @options = options
+    @options = @options.merge(options)
 
     if options['hostname'].nil? && options['target']
       uri = URI.parse(options['target'])
