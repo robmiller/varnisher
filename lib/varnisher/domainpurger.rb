@@ -12,16 +12,27 @@ module Varnisher
   #       }
   #     }
   class DomainPurger
-    # Executes the purge request.
+    # Initialises the purger
     #
     # @param domain [String] The hostname to purge
     def initialize(domain)
-      purged = Varnisher.purge(domain, :domain)
+      @domain = domain
+    end
+
+    # Executes the purge request
+    #
+    # @return [True, False] True of the purge was successful, false if
+    #   it wasn't
+    def purge
+      purged = Varnisher.purge(@domain, :domain)
+
       if purged
-        Varnisher.log.info "Purged #{domain}"
+        Varnisher.log.info "Purged #{@domain}"
       else
-        Varnisher.log.info "Failed to purge #{domain}"
+        Varnisher.log.info "Failed to purge #{@domain}"
       end
+
+      purged
     end
   end
 end

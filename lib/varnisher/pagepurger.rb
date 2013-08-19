@@ -6,8 +6,10 @@ require 'parallel'
 module Varnisher
   # Purges an individual URL from Varnish.
   class PagePurger
+    attr_reader :urls
+
     # A bash at an abstract representation of resources. All you need
-    # is an XPath, and what attribute to select from the matched
+    # is a selector, and what attribute to select from the matched
     # elements.
     Resource = Struct.new :name, :selector, :attribute
     def self.resources

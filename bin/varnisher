@@ -59,7 +59,8 @@ Main {
         purger.purge
       # If target is a hostname, assume we want to purge an entire domain.
       elsif target =~ /^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/
-        Varnisher::DomainPurger.new target
+        purger = Varnisher::DomainPurger.new target
+        purger.purge
 
         if params['reindex'].given?
           spider = Varnisher::Spider.new "http://#{target}/"

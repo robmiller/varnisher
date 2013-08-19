@@ -1,3 +1,5 @@
+require 'net/http'
+
 require_relative 'varnisher/spider'
 require_relative 'varnisher/purger'
 require_relative 'varnisher/domainpurger'
@@ -30,7 +32,7 @@ module Varnisher
   end
 
   def self.options=(options)
-    @options = options
+    @options = @options.merge(options)
 
     if options['hostname'].nil? && options['target']
       uri = URI.parse(options['target'])
