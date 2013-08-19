@@ -1,3 +1,5 @@
+require 'net/http'
+
 require_relative 'varnisher/spider'
 require_relative 'varnisher/purger'
 require_relative 'varnisher/domainpurger'

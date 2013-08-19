@@ -1,3 +1,23 @@
+# Adds the custom verb "PURGE" to the Net::HTTP library, allowing calls
+# to:
+#
+#     Net::HTTP.new(host, port).request(Purge.new(uri))
+class Purge < Net::HTTPRequest
+  METHOD = "PURGE"
+  REQUEST_HAS_BODY = false
+  RESPONSE_HAS_BODY = false
+end
+
+# Adds the custom verb "DOMAINPURGE" to the Net::HTTP library, allowing
+# calls to:
+#
+#     Net::HTTP.new(host, port).request(DomainPurge.new(uri))
+class DomainPurge < Net::HTTPRequest
+  METHOD = "DOMAINPURGE"
+  REQUEST_HAS_BODY = false
+  RESPONSE_HAS_BODY = false
+end
+
 module Varnisher
   # Sends a purge request to the Varnish server
   #
@@ -34,7 +54,7 @@ module Varnisher
     #   use "/"
     # @param host [String] The hostname of the URL being purged
     def initialize(method, path, host)
-      @method = method
+      @request_method = method == "PURGE" ? Purge : DomainPurge
       @path = path
       @host = host
     end
@@ -50,13 +70,17 @@ module Varnisher
     end
 
     def send
-      hostname = Varnisher.options['hostname']
+      hostname = Varnisher.options['hostname'] || @host
       port = Varnisher.options['port']
 
-      TCPSocket.open(hostname, port) do |s|
-        s.print("#{@method} #{@path} HTTP/1.1\r\nHost: #{@host}\r\n\r\n")
-        !!s.read.match(/HTTP\/1\.1 200 Purged\./)
+      begin
+        http = Net::HTTP.new(hostname, port)
+        response = http.request(@request_method.new(@path))
+      rescue Timeout::Error
+        return false
       end
+
+      response.code == "200"
     end
   end
 end
