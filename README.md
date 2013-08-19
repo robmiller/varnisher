@@ -1,6 +1,6 @@
 # varnisher
 
-[![Build Status](https://travis-ci.org/robmiller/varnisher.png)](https://travis-ci.org/robmiller/varnisher)
+[![Build Status](https://travis-ci.org/robmiller/varnisher.png?branch=master)](https://travis-ci.org/robmiller/varnisher)
 
 Administering Varnish is generally a breeze, but sometimes you want to
 do one of the few things that aren't painless out of the box. Hopefully,
