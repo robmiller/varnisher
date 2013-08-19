@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Page purger test</title>
+
+		<link rel="stylesheet" href="page-relative.css">
+		<link rel="stylesheet" href="/foo/hostname-relative.css">
+		<link rel="stylesheet" href="http://www.example.com/absolute.css">
+		<link rel="stylesheet" href="http://www.example.net/external.css">
+	</head>
+	<body>
+		<img src="page-relative.png">
+		<img src="/foo/hostname-relative.png">
+		<img src="http://www.example.com/absolute.png">
+		<img src="http://www.example.net/external.png">
+
+		<script src="page-relative.js"></script>
+		<script src="/foo/hostname-relative.js"></script>
+		<script src="http://www.example.com/absolute.js"></script>
+		<script src="http://www.example.net/external.js"></script>
+	</body>
+</html>
