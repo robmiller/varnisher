@@ -1,21 +1,25 @@
-# Adds the custom verb "PURGE" to the Net::HTTP library, allowing calls
-# to:
-#
-#     Net::HTTP.new(host, port).request(Purge.new(uri))
-class Purge < Net::HTTPRequest
-  METHOD = "PURGE"
-  REQUEST_HAS_BODY = false
-  RESPONSE_HAS_BODY = false
-end
+module Varnisher
+  module HTTP
+    # Adds the custom verb "PURGE" to the Net::HTTP library, allowing calls
+    # to:
+    #
+    #     Net::HTTP.new(host, port).request(Varnisher::HTTP::Purge.new(uri))
+    class Purge < Net::HTTPRequest
+      METHOD = "PURGE"
+      REQUEST_HAS_BODY = false
+      RESPONSE_HAS_BODY = false
+    end
 
-# Adds the custom verb "DOMAINPURGE" to the Net::HTTP library, allowing
-# calls to:
-#
-#     Net::HTTP.new(host, port).request(DomainPurge.new(uri))
-class DomainPurge < Net::HTTPRequest
-  METHOD = "DOMAINPURGE"
-  REQUEST_HAS_BODY = false
-  RESPONSE_HAS_BODY = false
+    # Adds the custom verb "DOMAINPURGE" to the Net::HTTP library, allowing
+    # calls to:
+    #
+    #     Net::HTTP.new(host, port).request(Varnisher::HTTP::DomainPurge.new(uri))
+    class DomainPurge < Net::HTTPRequest
+      METHOD = "DOMAINPURGE"
+      REQUEST_HAS_BODY = false
+      RESPONSE_HAS_BODY = false
+    end
+  end
 end
 
 module Varnisher
@@ -54,7 +58,7 @@ module Varnisher
     #   use "/"
     # @param host [String] The hostname of the URL being purged
     def initialize(method, path, host)
-      @request_method = method == "PURGE" ? Purge : DomainPurge
+      @request_method = method == "PURGE" ? Varnisher::HTTP::Purge : Varnisher::HTTP::DomainPurge
       @path = path
       @host = host
     end
