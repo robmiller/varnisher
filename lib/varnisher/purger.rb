@@ -77,6 +77,8 @@ module Varnisher
       hostname = Varnisher.options['hostname'] || @host
       port = Varnisher.options['port']
 
+      @path = '/' if @path.nil? || @path == ''
+
       begin
         http = Net::HTTP.new(hostname, port)
         response = http.request(@request_method.new(@path))
