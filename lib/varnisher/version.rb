@@ -1,3 +1,3 @@
 module Varnisher
-  VERSION = '1.0.beta.7'
+  VERSION = '1.0'
 end
