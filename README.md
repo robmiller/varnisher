@@ -19,12 +19,11 @@ rdoc.info](http://rdoc.info/github/robmiller/varnisher).
 
 ## Installation
 
-Varnish requires Ruby >1.9.3 to run. If you've got a recent Ruby
-installed, then Varnisher can be installed easily via RubyGems.
+Varnisher can be installed using RubyGems:
 
-Varnisher is still in beta; you can install it with:
+	gem install varnisher
 
-	gem install varnisher --pre
+Varnisher requires Ruby 1.9.3 or above.
 
 ## Usage
 
