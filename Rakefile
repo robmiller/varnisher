@@ -1,4 +1,5 @@
 require 'rake/testtask'
+require 'rubygems/tasks'
 
 task :default => [:'']
 
@@ -10,3 +11,4 @@ task :'' do
   task("alltests").execute
 end
 
+Gem::Tasks.new

@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'bundler'
-Bundler.setup
+require 'rubygems'
+require 'bundler/setup'
 
 require 'main'
 require 'yaml'
