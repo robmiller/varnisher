@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'main', '~> 5.2.0'
   s.add_runtime_dependency 'nokogiri', '~> 1.6.0'
-  s.add_runtime_dependency 'parallel', '~> 0.7.1'
+  s.add_runtime_dependency 'parallel', '~> 0.8.1'
 
   s.add_development_dependency 'rake', '~> 10.1.0'
   s.add_development_dependency 'minitest', '~> 5.0.6'
