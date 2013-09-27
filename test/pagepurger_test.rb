@@ -22,32 +22,32 @@ describe Varnisher::PagePurger do
   end
 
   it "purges stylesheets" do
-    assert @purger.urls.include?(URI.parse('http://www.example.com/page-relative.css'))
-    assert @purger.urls.include?(URI.parse('http://www.example.com/foo/hostname-relative.css'))
-    assert @purger.urls.include?(URI.parse('http://www.example.com/absolute.css'))
+    assert_includes @purger.urls, URI.parse('http://www.example.com/page-relative.css')
+    assert_includes @purger.urls, URI.parse('http://www.example.com/foo/hostname-relative.css')
+    assert_includes @purger.urls, URI.parse('http://www.example.com/absolute.css')
   end
 
   it "ignores external stylesheets" do
-    refute @purger.urls.include?(URI.parse('http://www.example.net/external.css'))
+    refute_includes @purger.urls, URI.parse('http://www.example.net/external.css')
   end
 
   it "purges images" do
-    assert @purger.urls.include?(URI.parse('http://www.example.com/page-relative.png'))
-    assert @purger.urls.include?(URI.parse('http://www.example.com/foo/hostname-relative.png'))
-    assert @purger.urls.include?(URI.parse('http://www.example.com/absolute.png'))
+    assert_includes @purger.urls, URI.parse('http://www.example.com/page-relative.png')
+    assert_includes @purger.urls, URI.parse('http://www.example.com/foo/hostname-relative.png')
+    assert_includes @purger.urls, URI.parse('http://www.example.com/absolute.png')
   end
 
   it "ignores external images" do
-    refute @purger.urls.include?(URI.parse('http://www.example.net/external.png'))
+    refute_includes @purger.urls, URI.parse('http://www.example.net/external.png')
   end
 
   it "purges JavaScript files" do
-    assert @purger.urls.include?(URI.parse('http://www.example.com/page-relative.js'))
-    assert @purger.urls.include?(URI.parse('http://www.example.com/foo/hostname-relative.js'))
-    assert @purger.urls.include?(URI.parse('http://www.example.com/absolute.js'))
+    assert_includes @purger.urls, URI.parse('http://www.example.com/page-relative.js')
+    assert_includes @purger.urls, URI.parse('http://www.example.com/foo/hostname-relative.js')
+    assert_includes @purger.urls, URI.parse('http://www.example.com/absolute.js')
   end
 
   it "ignores external JavaScript files" do
-    refute @purger.urls.include?(URI.parse('http://www.example.net/external.js'))
+    refute_includes @purger.urls, URI.parse('http://www.example.net/external.js')
   end
 end

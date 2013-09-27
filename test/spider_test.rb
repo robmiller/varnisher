@@ -19,27 +19,27 @@ describe Varnisher::Spider do
   end
 
   it "extracts page-relative links" do
-    assert @spider.to_visit.include?(URI.parse('http://www.example.com/bar'))
+    assert_includes @spider.to_visit, URI.parse('http://www.example.com/bar')
   end
 
   it "extracts hostname-relative links" do
-    assert @spider.to_visit.include?(URI.parse('http://www.example.com/baz'))
+    assert_includes @spider.to_visit, URI.parse('http://www.example.com/baz')
   end
 
   it "extracts absolute URLs" do
-    assert @spider.to_visit.include?(URI.parse('http://www.example.com/foo/bar'))
+    assert_includes @spider.to_visit, URI.parse('http://www.example.com/foo/bar')
   end
 
   it "ignores URLs on different hostnames" do
-    refute @spider.to_visit.include?(URI.parse('http://www.example.net/foo'))
+    refute_includes @spider.to_visit, URI.parse('http://www.example.net/foo')
   end
 
   it "reads URLs from comments" do
-    assert @spider.to_visit.include?(URI.parse('http://www.example.com/commented'))
+    assert_includes @spider.to_visit, URI.parse('http://www.example.com/commented')
   end
 
   it "ignores external URLs in comments" do
-    refute @spider.to_visit.include?(URI.parse('http://www.example.net/commented'))
+    refute_includes @spider.to_visit, URI.parse('http://www.example.net/commented')
   end
 
   it "crawls all queued pages" do
