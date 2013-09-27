@@ -10,13 +10,13 @@ module Varnisher
     # in the collection.
     def initialize(urls = [])
       @urls = Array(urls)
-      make_uris
+      @urls = make_uris
     end
 
     # Coerces the values of the current collection into being URI
     # objects, which allows strings to be passed initially.
     def make_uris
-      @urls = urls.map do |url|
+      coerced = urls.map do |url|
         begin
           URI(url)
         rescue
@@ -24,7 +24,7 @@ module Varnisher
         end
       end
 
-      @urls = urls.compact
+      coerced.compact
     end
 
     # Given a relative URL and a base to work from, will return the
