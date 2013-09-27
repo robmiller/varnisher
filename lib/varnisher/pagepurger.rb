@@ -69,6 +69,8 @@ module Varnisher
     # Purges all the resources on the given page.
     def purge_resources
       fetch_page
+      parse_page
+      @urls = find_resources
 
       return if @urls.empty?
 
@@ -84,16 +86,18 @@ module Varnisher
       Varnisher.log.info "Looking for external resources on #{@url}..."
 
       begin
-        @doc = Nokogiri::HTML(Net::HTTP.get_response(@uri).body)
+        @html = Net::HTTP.get_response(@uri).body
       rescue
         Varnisher.log.info "Hmm, I couldn't fetch that URL. Sure it's right?\n"
         return
       end
+    end
 
-      @urls = find_resources
-
-      Varnisher.log.debug ''
-      Varnisher.log.info "#{@urls.length} total resources found.\n"
+    # Parses the raw HTML we've fetched into a Nokogiri document.
+    #
+    # @api private
+    def parse_page
+      @doc = Nokogiri::HTML(@html)
     end
 
     # Returns an array of resources contained within the current page.
@@ -107,18 +111,31 @@ module Varnisher
     # @return [Array] An array of strings, each representing a URL
     #
     # @api private
-    def find_resources
-      found = []
+    def find_resources(&block)
+      found = Varnisher::Urls.new
 
-      self.class.resources.each do |res|
-        @doc.css(res.selector).each do |e|
-          attribute = e[res.attribute]
+      self.class.resources.each do |resource|
+        found += find_resource(resource, &block)
+      end
 
-          Varnisher.log.debug("Found resource: #{attribute}")
+      Varnisher.log.debug ''
+      Varnisher.log.info "#{found.length} total resources found.\n"
 
-          yield attribute if block_given?
-          found << attribute
-        end
+      found
+    end
+
+    # Given a resource, will return instances of that resource found in
+    # the current document.
+    def find_resource(resource, &block)
+      found = Varnisher::Urls.new
+
+      @doc.css(resource.selector).each do |e|
+        attribute = e[resource.attribute]
+
+        Varnisher.log.debug("Found resource: #{attribute}")
+
+        yield attribute if block_given?
+        found << attribute
       end
 
       found
@@ -133,8 +150,7 @@ module Varnisher
     def tidy_resources
       Varnisher.log.info 'Tidying resources...'
 
-      @urls = @urls.map { |url| URI.join(@uri, url) }
-        .select { |uri| uri.scheme == 'http' && uri.host == @uri.host }
+      @urls = @urls.make_absolute(@uri).with_hostname(@uri.host)
 
       Varnisher.log.info "#{@urls.length} purgeable resources found.\n"
     end
