@@ -10,6 +10,7 @@ module Varnisher
     # in the collection.
     def initialize(urls = [])
       @urls = Array(urls)
+      make_uris
     end
 
     # Coerces the values of the current collection into being URI
@@ -17,7 +18,7 @@ module Varnisher
     def make_uris
       @urls = urls.map do |url|
         begin
-          URI(u)
+          URI(url)
         rescue
           nil
         end
@@ -83,7 +84,7 @@ module Varnisher
       Urls.new(urls + other.urls)
     end
 
-    def_delegators :urls, :each, :<<, :length, :empty?
+    def_delegators :urls, :each, :<<, :length, :empty?, :include?
 
     protected
     attr_reader :urls

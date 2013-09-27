@@ -29,8 +29,6 @@ module Varnisher
     def initialize(url)
       @url = url
       @uri = URI.parse(url)
-
-      @urls = []
     end
 
     # Sends a PURGE request to the Varnish server, asking it to purge
