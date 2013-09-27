@@ -70,7 +70,8 @@ module Varnisher
     # collection without their query string values.
     def without_query_strings
       normalised = urls.group_by do |h|
-        URI.parse(h.scheme + '://' + h.host + h.path.to_s)
+        url.query = nil
+        url
       end
 
       Urls.new(normalised.keys)
