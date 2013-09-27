@@ -12,6 +12,20 @@ module Varnisher
       @urls = Array(urls)
     end
 
+    # Coerces the values of the current collection into being URI
+    # objects, which allows strings to be passed initially.
+    def make_uris
+      @urls = urls.map do |url|
+        begin
+          URI(u)
+        rescue
+          nil
+        end
+      end
+
+      @urls = urls.compact
+    end
+
     # Given a relative URL and a base to work from, will return the
     # absolute form of that URL.
     #
@@ -26,7 +40,7 @@ module Varnisher
     #   absolute_url('http://www.example.com/foo/bar', 'baz')
     #   # => "http://www.example.com/foo/baz"
     def absolute_url(base, url)
-      URI.join(base, url)
+      URI.join(base, URI.escape(url.to_s))
     end
 
     # Returns a new collection containing absolute versions of all the
@@ -39,6 +53,27 @@ module Varnisher
     # collection that match the given hostname.
     def with_hostname(hostname)
       Urls.new(urls.select { |uri| uri.scheme == 'http' && uri.host == hostname })
+    end
+
+    # Returns a new collection containing the URLs in the current
+    # collection, normalised according to their hash.
+    def without_hashes
+      normalised = urls.group_by do |url|
+        url.fragment = nil
+        url
+      end
+
+      Urls.new(normalised.keys)
+    end
+
+    # Returns a new collection containing the URLs in the current
+    # collection without their query string values.
+    def without_query_strings
+      normalised = urls.group_by do |h|
+        URI.parse(h.scheme + '://' + h.host + h.path.to_s)
+      end
+
+      Urls.new(normalised.keys)
     end
 
     # Allows the addition of two collections by accessing the underlying

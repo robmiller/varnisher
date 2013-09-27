@@ -43,6 +43,9 @@ module Varnisher
 
       @visited = []
       @to_visit = []
+
+      @threads = Varnisher.options['threads']
+      @num_pages = Varnisher.options['num-pages']
     end
 
     # Adds a link to the queue of pages to be visited.
@@ -103,16 +106,14 @@ module Varnisher
     #
     # @api private
     def find_links(doc, uri)
-      hrefs = []
+      urls = Varnisher::Urls.new(get_anchors(doc) + get_commented_urls(doc))
 
-      hrefs  = get_anchors(doc)
-      hrefs += get_commented_urls(doc)
+      urls = urls.make_absolute(uri).with_hostname(uri.host)
 
-      hrefs = valid_urls(hrefs, uri)
-      hrefs = remove_hashes(hrefs)
-      hrefs = remove_query_strings(hrefs)
+      urls = urls.without_hashes if Varnisher.options['ignore-hashes']
+      urls = urls.without_query_strings if Varnisher.options['ignore-query-strings']
 
-      hrefs
+      urls
     end
 
     # Given an HTML document, will return all the URLs that exist as
@@ -131,67 +132,6 @@ module Varnisher
       doc.xpath('//comment()').flat_map { |e| URI.extract(e.to_html, 'http') }
     end
 
-    # Given a set of URLs, will return only the ones that are valid for
-    # spidering.
-    #
-    # That means URLs that have the same hostname as the hostname we
-    # started from, and that are on the HTTP scheme rather than HTTPS
-    # (since Varnish doesn't support HTTPS).
-    #
-    # Additionally, some normalisation will be performed, so that the
-    # URLs are absolute (using the page that they were fetched from as
-    # the base, just like a browser would).
-    #
-    # @return [Array] An array of URIs
-    def valid_urls(hrefs, uri)
-      hrefs.map { |u| URI.join(uri, URI.escape(u)) }
-        .select { |u| u.scheme == 'http' && u.host == @uri.host }
-    end
-
-    # Given a set of URLs, will normalise them according to their URL
-    # minus the hash; that is, normalise them so that:
-    #
-    # foo#bar
-    #
-    # and:
-    #
-    # foo#baz
-    #
-    # Are considered the same.
-    #
-    # @return [Array] An array of URIs
-    def remove_hashes(hrefs)
-      return hrefs unless Varnisher.options['ignore-hashes']
-
-      hrefs = hrefs.group_by do |h|
-        URI.parse(h.scheme + '://' + h.host + h.path.to_s + h.query.to_s)
-      end
-
-      hrefs.keys
-    end
-
-    # Given a set of URLs, will normalise them according to their URL
-    # minus the query string; that is, normalise them so that:
-    #
-    # foo?foo=bar
-    #
-    # and:
-    #
-    # foo?foo=baz
-    #
-    # Are considered the same.
-    #
-    # @return [Array] An array of URIs
-    def remove_query_strings(hrefs)
-      return hrefs unless Varnisher.options['ignore-query-strings']
-
-      hrefs = hrefs.group_by do |h|
-        URI.parse(h.scheme + '://' + h.host + h.path.to_s)
-      end
-
-      hrefs.keys
-    end
-
     # Pops a URL from the queue of yet-to-be-visited URLs, ensuring that
     # it's not one that we've visited before.
     #
@@ -205,6 +145,16 @@ module Varnisher
       end
 
       url
+    end
+
+    # Returns true if the spider has visited the maximum number of pages
+    # it's allowed to.
+    def limit_reached?
+      @visited.length > @num_pages && @num_pages >= 0
+    end
+
+    def pages_remaining?
+      @to_visit.length > 0
     end
 
     # Kicks off the spidering process.
@@ -221,13 +171,8 @@ module Varnisher
 
       crawl_page(@uri)
 
-      threads = Varnisher.options['threads']
-      num_pages = Varnisher.options['num-pages']
-
-      Parallel.in_threads(threads) do |thread_number|
-        next if @visited.length > num_pages && num_pages >= 0
-
-        crawl_page(pop_url) while @to_visit.length > 0
+      Parallel.in_threads(@threads) do |_|
+        crawl_page(pop_url) while pages_remaining? and !limit_reached?
       end
 
       Varnisher.log.info "Done; #{@visited.length} pages hit."
