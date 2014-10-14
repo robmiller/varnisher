@@ -81,7 +81,9 @@ module Varnisher
 
       begin
         http = Net::HTTP.new(hostname, port)
-        response = http.request(@request_method.new(@path))
+        request = @request_method.new(@path)
+        request.add_field("Host", @host)
+        response = http.request(request)
       rescue Timeout::Error
         return false
       end
