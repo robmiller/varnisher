@@ -1,3 +1,5 @@
+require "forwardable"
+
 module Varnisher
   # A collection for URLs, that exposes some useful behaviour (like
   # selecting only URLs that have a given hostname, or converting
