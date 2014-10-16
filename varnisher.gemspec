@@ -4,7 +4,7 @@ require "varnisher/version"
 Gem::Specification.new do |s|
   s.name = "varnisher"
   s.version = Varnisher::VERSION
-  s.date = "2013-08-11"
+  s.date = Date.today.strftime("%Y-%m-%d")
 
   s.summary = "Helpful tools for working with Varnish caches"
   s.description = "Some tools that make working with the Varnish HTTP cache easier, including things like doing mass purges of entire domains."
