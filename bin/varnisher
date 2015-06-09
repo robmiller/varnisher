@@ -93,6 +93,11 @@ Main {
       description 'When given, /foo?foo=bar and /foo?foo=baz will be treated as the same resource.'
     }
 
+    option('f', 'filter-by-css') {
+      argument :optional
+      description 'When given, it will be used to crawl some specific area of the page.'
+    }
+
     def run
       target = params['target'].value
 
