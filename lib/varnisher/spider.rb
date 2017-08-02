@@ -108,9 +108,10 @@ module Varnisher
     def find_links(doc, uri)
       urls = Varnisher::Urls.new(get_anchors(doc) + get_commented_urls(doc))
 
+      urls = urls.without_hashes if Varnisher.options['ignore-hashes']
+
       urls = urls.make_absolute(uri).with_hostname(uri.host)
 
-      urls = urls.without_hashes if Varnisher.options['ignore-hashes']
       urls = urls.without_query_strings if Varnisher.options['ignore-query-strings']
 
       urls
