@@ -122,7 +122,9 @@ module Varnisher
     #
     # @return [Array] An array of strings
     def get_anchors(doc)
-      doc.xpath('//a[@href]').map { |e| e['href'] }
+      css_selectors   = Varnisher.options['filter-by-css'] || 'html'
+      xpath_selectors = css_selectors != 'html' ? 'a[@href]' : '//a[@href]'
+      doc.css(css_selectors).xpath(xpath_selectors).map { |e| e['href'] }
     end
 
     # Given an HTML document, will return all the URLs that exist in
