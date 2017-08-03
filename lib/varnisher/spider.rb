@@ -79,7 +79,11 @@ module Varnisher
       # Let's not hit this again
       @visited << uri.to_s
 
-      doc = Nokogiri::HTML(Net::HTTP.get_response(uri).body)
+      res = Net::HTTP.get_response(uri)
+
+      return if res.code != '200'
+
+      doc = Nokogiri::HTML(res.body)
 
       Varnisher.log.debug "Fetched #{uri}..."
 
